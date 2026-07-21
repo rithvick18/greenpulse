@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Traffic Control | GreenPulse OS</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700;800&amp;family=Playfair+Display:wght@700;900&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        /* Custom scrollbar for industrial feel */
+        ::-webkit-scrollbar { width: 4px; height: 4px; }
+        ::-webkit-scrollbar-track { background: #1b1b1b; }
+        ::-webkit-scrollbar-thumb { background: #ffc887; }
+        
+        .grid-bg {
+            background-image: linear-gradient(to right, rgba(161, 142, 121, 0.05) 1px, transparent 1px),
+                              linear-gradient(to bottom, rgba(161, 142, 121, 0.05) 1px, transparent 1px);
+            background-size: 32px 32px;
+        }
+
+        .segment-bar div {
+            height: 100%;
+            border-right: 2px solid #131313;
+        }
+
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.3; }
+        }
+        .status-led {
+            animation: blink 1s infinite;
+        }
+    </style>
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              "colors": {
+                      "error-container": "#93000a",
+                      "primary-fixed-dim": "#ffb95f",
+                      "surface-dim": "#131313",
+                      "primary-container": "#fca311",
+                      "primary": "#ffc887",
+                      "on-primary-fixed-variant": "#653e00",
+                      "on-error-container": "#ffdad6",
+                      "surface-tint": "#ffb95f",
+                      "surface-container-lowest": "#0e0e0e",
+                      "outline": "#a18e79",
+                      "surface-variant": "#353535",
+                      "background": "#131313",
+                      "tertiary": "#d1d2d2",
+                      "on-secondary-fixed-variant": "#41484e",
+                      "on-surface-variant": "#d9c3ad",
+                      "tertiary-fixed-dim": "#c6c6c6",
+                      "surface": "#131313",
+                      "on-tertiary-fixed-variant": "#454747",
+                      "surface-bright": "#393939",
+                      "inverse-primary": "#855300",
+                      "outline-variant": "#534433",
+                      "on-secondary-container": "#b2b9c1",
+                      "on-error": "#690005",
+                      "inverse-surface": "#e2e2e2",
+                      "on-surface": "#e2e2e2",
+                      "surface-container-high": "#2a2a2a",
+                      "on-primary-fixed": "#2a1700",
+                      "on-tertiary-fixed": "#1a1c1c",
+                      "secondary-container": "#434a51",
+                      "on-tertiary": "#2f3131",
+                      "tertiary-container": "#b6b6b6",
+                      "tertiary-fixed": "#e2e2e2",
+                      "secondary": "#c0c7cf",
+                      "on-primary": "#472a00",
+                      "on-background": "#e2e2e2",
+                      "surface-container-highest": "#353535",
+                      "secondary-fixed-dim": "#c0c7cf",
+                      "secondary-fixed": "#dce3ec",
+                      "on-tertiary-container": "#464848",
+                      "on-secondary": "#2a3138",
+                      "inverse-on-surface": "#303030",
+                      "on-secondary-fixed": "#151c22",
+                      "on-primary-container": "#663f00",
+                      "primary-fixed": "#ffddb8",
+                      "surface-container-low": "#1b1b1b",
+                      "error": "#ffb4ab",
+                      "surface-container": "#1f1f1f"
+              },
+              "borderRadius": {
+                      "DEFAULT": "0px",
+                      "lg": "0px",
+                      "xl": "0px",
+                      "full": "9999px"
+              },
+              "spacing": {
+                      "margin-mobile": "16px",
+                      "gutter": "16px",
+                      "border-heavy": "4px",
+                      "unit": "4px",
+                      "margin-desktop": "32px",
+                      "border-thick": "2px"
+              },
+              "fontFamily": {
+                      "label-caps": ["JetBrains Mono"],
+                      "headline-md": ["Playfair Display"],
+                      "headline-lg": ["Playfair Display"],
+                      "body-md": ["JetBrains Mono"],
+                      "code-data": ["JetBrains Mono"]
+              }
+            }
+          }
+        }
+      </script>
+</head>
+<body class="bg-background text-on-surface font-body-md selection:bg-primary selection:text-on-primary overflow-hidden h-screen flex flex-col">
+<!-- Top Navigation Bar -->
+<header class="w-full h-16 border-b border-primary/30 bg-surface-container-low/40 backdrop-blur-xl flex justify-between items-center px-8 z-50">
+<div class="flex items-center gap-4">
+<span class="font-headline-md text-headline-md font-bold text-primary tracking-tighter">GreenPulse OS</span>
+<div class="h-6 w-[2px] bg-outline/30 mx-2"></div>
+<span class="font-label-caps text-label-caps text-secondary uppercase">Traffic Control v2.4</span>
+</div>
+<div class="flex-1 max-w-md mx-8 hidden md:block">
+<div class="relative group">
+<span class="absolute left-3 top-1/2 -translate-y-1/2 material-symbols-outlined text-on-surface-variant">search</span>
+<input class="w-full bg-surface-container-lowest border-border-thick border-outline-variant px-10 py-2 font-code-data text-sm focus:border-primary focus:ring-0 transition-all placeholder:text-outline/50" placeholder="QUERY NETWORK SEGMENT..." type="text"/>
+</div>
+</div>
+<div class="flex items-center gap-6">
+<div class="flex gap-4">
+<span class="material-symbols-outlined text-tertiary cursor-pointer hover:text-primary transition-all">notifications_active</span>
+<span class="material-symbols-outlined text-tertiary cursor-pointer hover:text-primary transition-all">settings_input_component</span>
+<span class="material-symbols-outlined text-tertiary cursor-pointer hover:text-primary transition-all">terminal</span>
+</div>
+<div class="flex items-center gap-3 pl-6 border-l border-outline/30">
+<div class="text-right hidden lg:block">
+<p class="font-label-caps text-label-caps text-on-surface">Alpha-7</p>
+<p class="text-[10px] text-primary">MASTER OPERATOR</p>
+</div>
+<img class="w-10 h-10 border-border-thick border-primary grayscale hover:grayscale-0 transition-all cursor-pointer" data-alt="A portrait of a futuristic industrial systems operator wearing technical tactical gear, silhouetted against a backdrop of amber control screens. The lighting is harsh and high-contrast, emphasizing metallic textures and professional resolve. The aesthetic is dark and gritty with safety-yellow highlights, matching a high-tech manufacturing facility environment." src="https://lh3.googleusercontent.com/aida-public/AB6AXuA4lyti9FtHWPC2a8Fzd5RoBvAiaijhlJBTNoYpu2j5AYm78atxrGieiVUErGEcr6zJ1r_5dUDjz9NFzWwohj4QrZp1m9ywRvehRlVsEbbqTxtSlrAyKfwBr39rHCFu_BwMo4a-lIl9G988MCe-V6LdBSbjqmZax3O4pJoS5iQHC7XqfwusP6n9NH714IY6tsAwhH7DraY-ClQQ385kvd-Jfh7k6wH4TaoEUPh-6Ii0w5NEBUa-0f_g_EQq2HtASFaVIKsIc5JOxV9-"/>
+</div>
+</div>
+</header>
+<div class="flex flex-1 overflow-hidden">
+<!-- Sidebar -->
+<aside class="h-full w-64 border-r border-primary/30 bg-surface-container-low/40 backdrop-blur-xl flex flex-col py-6 px-4 shrink-0">
+<nav class="flex-1 space-y-2">
+<div class="font-label-caps text-[10px] text-outline mb-4 px-2 tracking-widest">CORE MODULES</div>
+<a class="flex items-center gap-3 p-3 text-on-surface-variant font-medium hover:bg-secondary-container/20 hover:text-secondary transition-all group" href="#">
+<span class="material-symbols-outlined">dashboard</span>
+<span class="font-label-caps text-label-caps">Overview</span>
+</a>
+<a class="flex items-center gap-3 p-3 text-on-surface-variant font-medium hover:bg-secondary-container/20 hover:text-secondary transition-all group" href="#">
+<span class="material-symbols-outlined">architecture</span>
+<span class="font-label-caps text-label-caps">Infrastructure</span>
+</a>
+<a class="flex items-center gap-3 p-3 text-primary font-bold border-r-2 border-primary bg-primary/10" href="#">
+<span class="material-symbols-outlined">traffic</span>
+<span class="font-label-caps text-label-caps">Traffic Control</span>
+</a>
+<a class="flex items-center gap-3 p-3 text-on-surface-variant font-medium hover:bg-secondary-container/20 hover:text-secondary transition-all group" href="#">
+<span class="material-symbols-outlined">bolt</span>
+<span class="font-label-caps text-label-caps">Energy Grid</span>
+</a>
+<a class="flex items-center gap-3 p-3 text-on-surface-variant font-medium hover:bg-secondary-container/20 hover:text-secondary transition-all group" href="#">
+<span class="material-symbols-outlined">security</span>
+<span class="font-label-caps text-label-caps">Public Safety</span>
+</a>
+<a class="flex items-center gap-3 p-3 text-on-surface-variant font-medium hover:bg-secondary-container/20 hover:text-secondary transition-all group" href="#">
+<span class="material-symbols-outlined">health_and_safety</span>
+<span class="font-label-caps text-label-caps">System Health</span>
+</a>
+</nav>
+<div class="mt-auto space-y-4">
+<button class="w-full bg-primary py-3 text-black font-bold font-label-caps text-label-caps border-border-thick border-black active:scale-95 transition-transform">
+                    EMERGENCY OVERRIDE
+                </button>
+<div class="pt-4 border-t border-outline/20">
+<a class="flex items-center gap-3 p-2 text-on-surface-variant hover:text-primary" href="#">
+<span class="material-symbols-outlined">settings</span>
+<span class="font-label-caps text-label-caps">Settings</span>
+</a>
+<a class="flex items-center gap-3 p-2 text-on-surface-variant hover:text-primary" href="#">
+<span class="material-symbols-outlined">help_center</span>
+<span class="font-label-caps text-label-caps">Support</span>
+</a>
+</div>
+</div>
+</aside>
+<!-- Main Content -->
+<main class="flex-1 overflow-y-auto grid-bg p-8 relative">
+<div class="flex flex-col lg:flex-row gap-6 h-full">
+<!-- Left Column: Map & Live Vectors -->
+<div class="flex-[2] flex flex-col gap-6">
+<!-- Live Heatmap Panel -->
+<div class="border-border-thick border-outline bg-surface-container flex flex-col">
+<div class="h-8 bg-surface-variant border-b border-outline flex items-center px-4 justify-between">
+<span class="font-label-caps text-[11px] text-on-surface font-bold">LIVE TRAFFIC FLOW VECTORS :: SECTOR 04-A</span>
+<div class="flex items-center gap-2">
+<div class="w-2 h-2 bg-primary status-led"></div>
+<span class="font-label-caps text-[10px] text-primary">REAL-TIME FEED</span>
+</div>
+</div>
+<div class="h-[500px] relative overflow-hidden group">
+<!-- Simulated Map via Shader/Background -->
+<div class="absolute inset-0 opacity-40 mix-blend-overlay pointer-events-none">
+
+</div>
+<img class="w-full h-full object-cover grayscale opacity-60" data-alt="A highly technical top-down map of a dense urban metropolis at night. The map is rendered in high-contrast cyan and amber wireframes, showing flowing traffic as neon light vectors. Red glowing clusters indicate heavy congestion. The overall visual style is reminiscent of a military command center interface, featuring industrial steel textures and precise data overlays." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBbtTgGSanFeEhtMllUmKaWcCqh3kywi143-gpJ8n7Oe24yS25lKNkT5NraLwqYZFtn69J1Qfl4eUk0uLCIR7-HmrkRicl24KdMqlOGmlPcMGLr3aKAX1PjM2RK8CA6rQRWrxcj6Owtki9yb3h0PwMmbj8bstOY5pg4P5-jR4LwXcvSES5EAQtoGe5qGbkKmqVnBOkix_A6T9NHmFFwpFWYwri41HLVuz6azYFJnnWe635yW1100nwl9c82GOg6C0xYyiUH4D-Qvrza"/>
+<!-- Tactical Overlays -->
+<div class="absolute inset-0 pointer-events-none p-6">
+<div class="w-48 bg-surface-container-low/80 backdrop-blur-md border border-primary/40 p-4 space-y-3">
+<p class="font-label-caps text-[10px] text-outline">GRID DENSITY</p>
+<div class="space-y-1">
+<div class="flex justify-between text-[10px] font-code-data">
+<span>AVE-9 FLOW</span>
+<span class="text-primary">82%</span>
+</div>
+<div class="h-2 w-full bg-surface-container-highest segment-bar flex">
+<div class="bg-primary w-[82%]"></div>
+</div>
+</div>
+<div class="space-y-1">
+<div class="flex justify-between text-[10px] font-code-data">
+<span>HUB-2 LOAD</span>
+<span class="text-error">94%</span>
+</div>
+<div class="h-2 w-full bg-surface-container-highest segment-bar flex">
+<div class="bg-error-container w-[94%]"></div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Transit Optimization Metrics -->
+<div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+<div class="border-border-thick border-outline bg-surface-container p-4">
+<div class="font-label-caps text-[10px] text-outline mb-2">BUS LATENCY</div>
+<div class="flex items-baseline gap-2">
+<span class="text-3xl font-code-data font-bold text-on-surface">-1.4m</span>
+<span class="text-[10px] text-primary">OPTIMIZED</span>
+</div>
+</div>
+<div class="border-border-thick border-outline bg-surface-container p-4">
+<div class="font-label-caps text-[10px] text-outline mb-2">RAIL THROUGHPUT</div>
+<div class="flex items-baseline gap-2">
+<span class="text-3xl font-code-data font-bold text-on-surface">12.8k</span>
+<span class="text-[10px] text-on-surface-variant">PAX/HR</span>
+</div>
+</div>
+<div class="border-border-thick border-outline bg-surface-container p-4 border-l-4 border-l-primary">
+<div class="font-label-caps text-[10px] text-outline mb-2">SIGNAL EFFICIENCY</div>
+<div class="flex items-baseline gap-2">
+<span class="text-3xl font-code-data font-bold text-on-surface">98.2%</span>
+<span class="text-[10px] text-primary">PEAK</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Right Column: Controls & Incidents -->
+<div class="flex-1 flex flex-col gap-6">
+<!-- Emergency Signal Control -->
+<div class="border-border-thick border-outline bg-surface-container flex flex-col">
+<div class="h-8 bg-surface-variant border-b border-outline flex items-center px-4">
+<span class="font-label-caps text-[11px] text-on-surface font-bold uppercase">Signal Override Panel</span>
+</div>
+<div class="p-6 space-y-6">
+<div class="space-y-4">
+<div class="flex items-center justify-between">
+<label class="font-label-caps text-xs text-on-surface-variant uppercase">Transit Priority</label>
+<div class="w-12 h-6 bg-surface-container-highest border border-outline relative cursor-pointer">
+<div class="absolute top-1 left-1 bottom-1 w-4 bg-primary"></div>
+</div>
+</div>
+<div class="flex items-center justify-between">
+<label class="font-label-caps text-xs text-on-surface-variant uppercase">Autonomous Buffer</label>
+<div class="w-12 h-6 bg-surface-container-highest border border-outline relative cursor-pointer">
+<div class="absolute top-1 right-1 bottom-1 w-4 bg-outline"></div>
+</div>
+</div>
+</div>
+<div class="space-y-2">
+<label class="font-label-caps text-[10px] text-outline block uppercase tracking-tighter">Manual Throttle (Main Hub)</label>
+<input class="w-full h-1 bg-surface-container-highest appearance-none cursor-pointer accent-primary border border-outline/20" type="range"/>
+<div class="flex justify-between font-code-data text-[10px] text-on-surface-variant">
+<span>RESTRICT</span>
+<span>SURGE</span>
+</div>
+</div>
+<button class="w-full border-border-thick border-error-container text-error text-[11px] font-bold py-3 hover:bg-error-container hover:text-on-error transition-all font-label-caps">
+                                TERMINATE ALL OVERRIDES
+                            </button>
+</div>
+</div>
+<!-- Active Incidents -->
+<div class="border-border-thick border-outline bg-surface-container flex flex-col flex-1">
+<div class="h-8 bg-surface-variant border-b border-outline flex items-center px-4">
+<span class="font-label-caps text-[11px] text-on-surface font-bold uppercase">Active Traffic Incidents</span>
+</div>
+<div class="p-0 overflow-y-auto max-h-[400px]">
+<div class="border-b border-outline/20 p-4 hover:bg-surface-container-high transition-colors cursor-pointer group">
+<div class="flex items-center justify-between mb-2">
+<div class="flex items-center gap-2">
+<div class="w-2 h-2 bg-error-container rounded-full"></div>
+<span class="font-code-data text-xs text-on-surface">ID: #882-X</span>
+</div>
+<span class="font-label-caps text-[10px] text-error">CRITICAL</span>
+</div>
+<p class="text-sm font-label-caps mb-1">STALLED FREIGHT CARRIER</p>
+<p class="text-[11px] text-on-surface-variant">Junction 12-B East. ETA Removal: 22m</p>
+</div>
+<div class="border-b border-outline/20 p-4 hover:bg-surface-container-high transition-colors cursor-pointer group">
+<div class="flex items-center justify-between mb-2">
+<div class="flex items-center gap-2">
+<div class="w-2 h-2 bg-primary-container rounded-full"></div>
+<span class="font-code-data text-xs text-on-surface">ID: #104-M</span>
+</div>
+<span class="font-label-caps text-[10px] text-primary">MINOR</span>
+</div>
+<p class="text-sm font-label-caps mb-1">CONSTRUCTION RE-ROUTE</p>
+<p class="text-[11px] text-on-surface-variant">Sub-sector 09. Duration: 6h</p>
+</div>
+<div class="p-4 hover:bg-surface-container-high transition-colors cursor-pointer group">
+<div class="flex items-center justify-between mb-2">
+<div class="flex items-center gap-2">
+<div class="w-2 h-2 bg-secondary rounded-full"></div>
+<span class="font-code-data text-xs text-on-surface">ID: #551-Z</span>
+</div>
+<span class="font-label-caps text-[10px] text-secondary">ADVISORY</span>
+</div>
+<p class="text-sm font-label-caps mb-1">SENSORS CALIBRATION</p>
+<p class="text-[11px] text-on-surface-variant">Regional Wide. Intermittent Lag.</p>
+</div>
+</div>
+<div class="mt-auto border-t border-outline bg-surface-variant p-4 flex justify-between items-center">
+<span class="font-label-caps text-[10px] text-on-surface">TOTAL SYSTEM LOAD</span>
+<span class="font-code-data text-sm font-bold text-primary">64.12 TB/S</span>
+</div>
+</div>
+</div>
+</div>
+</main>
+</div>
+<!-- System Status Bar (Bottom) -->
+<footer class="h-8 bg-surface-container-lowest border-t border-outline/30 flex items-center px-8 justify-between z-50">
+<div class="flex items-center gap-6">
+<div class="flex items-center gap-2">
+<span class="text-[10px] text-outline font-label-caps uppercase">System:</span>
+<span class="text-[10px] text-primary font-code-data">OPERATIONAL</span>
+</div>
+<div class="flex items-center gap-2">
+<span class="text-[10px] text-outline font-label-caps uppercase">Network:</span>
+<span class="text-[10px] text-primary font-code-data">ENCRYPTED</span>
+</div>
+</div>
+<div class="font-code-data text-[10px] text-on-surface-variant tracking-widest">
+            08-10-202X // 14:22:09 UTC
+        </div>
+</footer>
+<script>
+        // Simple micro-interaction for manual override button
+        const overrideBtn = document.querySelector('button.bg-primary');
+        overrideBtn.addEventListener('click', () => {
+            alert('SYSTEM WARNING: EMERGENCY OVERRIDE ENGAGED. AUTHORIZATION LOGGED.');
+        });
+
+        // Hover effect for incident items
+        const incidents = document.querySelectorAll('.group');
+        incidents.forEach(item => {
+            item.addEventListener('mouseenter', () => {
+                // Subtle interaction logic could go here
+            });
+        });
+    </script>
+</body></html>

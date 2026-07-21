@@ -1,0 +1,164 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root, .dark {
+  --color-on-tertiary-fixed-variant: 69 71 71;
+  --color-tertiary-container: 182 182 182;
+  --color-on-secondary-container: 178 185 193;
+  --color-on-tertiary-container: 70 72 72;
+  --color-surface-tint: 255 185 95;
+  --color-secondary-fixed-dim: 192 199 207;
+  --color-on-surface: 226 226 226;
+  --color-on-primary-fixed-variant: 101 62 0;
+  --color-on-primary: 71 42 0;
+  --color-on-tertiary: 47 49 49;
+  --color-on-error-container: 255 218 214;
+  --color-secondary-fixed: 220 227 236;
+  --color-tertiary: 209 210 210;
+  --color-on-secondary: 42 49 56;
+  --color-surface-container-highest: 53 53 53;
+  --color-surface-container-low: 27 27 27;
+  --color-on-primary-fixed: 42 23 0;
+  --color-error: 255 180 171;
+  --color-surface-container-high: 42 42 42;
+  --color-on-error: 105 0 5;
+  --color-on-surface-variant: 217 195 173;
+  --color-surface-bright: 57 57 57;
+  --color-on-secondary-fixed: 21 28 34;
+  --color-inverse-on-surface: 48 48 48;
+  --color-primary-fixed-dim: 255 185 95;
+  --color-primary: 255 200 135;
+  --color-inverse-surface: 226 226 226;
+  --color-surface-container-lowest: 14 14 14;
+  --color-primary-fixed: 255 221 184;
+  --color-secondary-container: 67 74 81;
+  --color-background: 19 19 19;
+  --color-surface-variant: 53 53 53;
+  --color-surface-dim: 19 19 19;
+  --color-tertiary-fixed-dim: 198 198 198;
+  --color-on-background: 226 226 226;
+  --color-surface: 19 19 19;
+  --color-surface-container: 31 31 31;
+  --color-tertiary-fixed: 226 226 226;
+  --color-on-tertiary-fixed: 26 28 28;
+  --color-outline-variant: 83 68 51;
+  --color-outline: 161 142 121;
+  --color-on-primary-container: 102 63 0;
+  --color-secondary: 192 199 207;
+  --color-primary-container: 252 163 17;
+  --color-inverse-primary: 133 83 0;
+  --color-on-secondary-fixed-variant: 65 72 78;
+  --color-error-container: 147 0 10;
+}
+
+.light {
+  --color-on-tertiary-fixed-variant: 51 65 85;
+  --color-tertiary-container: 226 232 240;
+  --color-on-secondary-container: 30 41 59;
+  --color-on-tertiary-container: 15 23 42;
+  --color-surface-tint: 217 119 6;
+  --color-secondary-fixed-dim: 203 213 225;
+  --color-on-surface: 15 23 42;
+  --color-on-primary-fixed-variant: 146 64 14;
+  --color-on-primary: 255 255 255;
+  --color-on-tertiary: 255 255 255;
+  --color-on-error-container: 153 27 27;
+  --color-secondary-fixed: 226 232 240;
+  --color-tertiary: 71 85 105;
+  --color-on-secondary: 255 255 255;
+  --color-surface-container-highest: 222 226 233;
+  --color-surface-container-low: 248 249 251;
+  --color-on-primary-fixed: 120 53 15;
+  --color-error: 220 38 38;
+  --color-surface-container-high: 232 235 240;
+  --color-on-error: 255 255 255;
+  --color-on-surface-variant: 71 85 105;
+  --color-surface-bright: 255 255 255;
+  --color-on-secondary-fixed: 15 23 42;
+  --color-inverse-on-surface: 248 250 252;
+  --color-primary-fixed-dim: 253 230 138;
+  --color-primary: 217 119 6;
+  --color-inverse-surface: 30 41 59;
+  --color-surface-container-lowest: 255 255 255;
+  --color-primary-fixed: 254 243 199;
+  --color-secondary-container: 226 232 240;
+  --color-background: 244 245 247;
+  --color-surface-variant: 232 235 240;
+  --color-surface-dim: 235 238 243;
+  --color-tertiary-fixed-dim: 226 232 240;
+  --color-on-background: 15 23 42;
+  --color-surface: 255 255 255;
+  --color-surface-container: 241 243 246;
+  --color-tertiary-fixed: 241 245 249;
+  --color-on-tertiary-fixed: 15 23 42;
+  --color-outline-variant: 203 213 225;
+  --color-outline: 148 163 184;
+  --color-on-primary-container: 120 53 15;
+  --color-secondary: 51 65 85;
+  --color-primary-container: 245 158 11;
+  --color-inverse-primary: 251 191 36;
+  --color-on-secondary-fixed-variant: 51 65 85;
+  --color-error-container: 254 226 226;
+}
+
+@layer base {
+  body {
+    @apply transition-colors duration-200;
+  }
+}
+
+/* Custom scrollbars for industrial aesthetic */
+::-webkit-scrollbar {
+  width: 5px;
+  height: 5px;
+}
+
+::-webkit-scrollbar-track {
+  background: #1b1b1b;
+}
+
+.dark ::-webkit-scrollbar-track {
+  background: #131313;
+}
+
+.light ::-webkit-scrollbar-track {
+  background: #e2e8f0;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #fca311;
+  border-radius: 2px;
+}
+
+/* Industrial Grid Background */
+.grid-bg {
+  background-image: linear-gradient(to right, rgba(161, 142, 121, 0.07) 1px, transparent 1px),
+                    linear-gradient(to bottom, rgba(161, 142, 121, 0.07) 1px, transparent 1px);
+  background-size: 32px 32px;
+}
+
+.light .grid-bg {
+  background-image: linear-gradient(to right, rgba(100, 116, 139, 0.12) 1px, transparent 1px),
+                    linear-gradient(to bottom, rgba(100, 116, 139, 0.12) 1px, transparent 1px);
+  background-size: 32px 32px;
+}
+
+/* Panel Header Clip */
+.panel-clip {
+  clip-path: polygon(0 0, calc(100% - 12px) 0, 100% 12px, 100% 100%, 0 100%);
+}
+
+.material-symbols-outlined {
+  font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+}
+
+/* Pulsing LED keyframe */
+.status-led {
+  animation: blink 1.2s infinite;
+}
+
+@keyframes blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.25; }
+}

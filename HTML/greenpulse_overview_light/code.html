@@ -1,0 +1,457 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>GreenPulse OS | City Command Center</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@500&family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@100..900&family=JetBrains+Mono:wght@100..900&display=swap" rel="stylesheet"/>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+            display: inline-block;
+            line-height: 1;
+            text-transform: none;
+            letter-spacing: normal;
+            word-wrap: normal;
+            white-space: nowrap;
+            direction: ltr;
+        }
+        .gauge-container {
+            position: relative;
+            width: 240px;
+            height: 240px;
+        }
+        .gauge-svg {
+            transform: rotate(-90deg);
+        }
+        .gauge-background {
+            fill: none;
+            stroke: #e2e2e2;
+            stroke-width: 12;
+        }
+        .gauge-progress {
+            fill: none;
+            stroke: #fca311;
+            stroke-width: 12;
+            stroke-dasharray: 628; /* 2 * PI * 100 */
+            stroke-dashoffset: 56.5; /* (1 - 0.91) * 628 */
+            stroke-linecap: round;
+            transition: stroke-dashoffset 1s ease-out;
+        }
+        .industrial-grid {
+            background-image: radial-gradient(#d9c3ad 0.5px, transparent 0.5px);
+            background-size: 24px 24px;
+        }
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #f9f9f9;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #d9c3ad;
+            border-radius: 4px;
+        }
+    </style>
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              "colors": {
+                      "secondary": "#525e7d",
+                      "primary": "#855300",
+                      "error": "#ba1a1a",
+                      "background": "#f9f9f9",
+                      "tertiary-container": "#b4b6ba",
+                      "on-surface": "#1a1c1c",
+                      "inverse-surface": "#2f3131",
+                      "on-secondary-fixed-variant": "#3a4664",
+                      "on-secondary": "#ffffff",
+                      "inverse-primary": "#ffb95f",
+                      "surface-container-lowest": "#ffffff",
+                      "tertiary-fixed": "#e0e2e6",
+                      "on-background": "#1a1c1c",
+                      "on-secondary-fixed": "#0d1b36",
+                      "on-surface-variant": "#534433",
+                      "surface-container-highest": "#e2e2e2",
+                      "surface-bright": "#f9f9f9",
+                      "on-tertiary-fixed-variant": "#44474a",
+                      "primary-fixed-dim": "#ffb95f",
+                      "primary-fixed": "#ffddb8",
+                      "on-tertiary": "#ffffff",
+                      "error-container": "#ffdad6",
+                      "on-tertiary-container": "#44484b",
+                      "secondary-container": "#cdd9fe",
+                      "on-primary": "#ffffff",
+                      "secondary-fixed": "#d9e2ff",
+                      "on-tertiary-fixed": "#191c1f",
+                      "on-primary-container": "#663f00",
+                      "on-primary-fixed": "#2a1700",
+                      "on-secondary-container": "#525f7e",
+                      "on-error": "#ffffff",
+                      "on-error-container": "#93000a",
+                      "surface": "#f9f9f9",
+                      "inverse-on-surface": "#f0f1f1",
+                      "on-primary-fixed-variant": "#653e00",
+                      "outline": "#867461",
+                      "surface-dim": "#dadada",
+                      "surface-tint": "#855300",
+                      "tertiary-fixed-dim": "#c4c7ca",
+                      "tertiary": "#5c5f62",
+                      "surface-container-low": "#f3f3f3",
+                      "primary-container": "#fca311",
+                      "secondary-fixed-dim": "#b9c6ea",
+                      "surface-variant": "#e2e2e2",
+                      "surface-container": "#eeeeee",
+                      "outline-variant": "#d9c3ad",
+                      "surface-container-high": "#e8e8e8"
+              },
+              "borderRadius": {
+                      "DEFAULT": "0.125rem",
+                      "lg": "0.25rem",
+                      "xl": "0.5rem",
+                      "full": "0.75rem"
+              },
+              "spacing": {
+                      "xl": "48px",
+                      "gutter": "20px",
+                      "base": "4px",
+                      "margin-desktop": "32px",
+                      "xs": "4px",
+                      "lg": "24px",
+                      "md": "16px",
+                      "sm": "8px",
+                      "margin-mobile": "16px"
+              },
+              "fontFamily": {
+                      "headline-lg-mobile": ["IBM Plex Sans"],
+                      "body-md": ["IBM Plex Sans"],
+                      "body-sm": ["IBM Plex Sans"],
+                      "headline-sm": ["IBM Plex Sans"],
+                      "body-lg": ["IBM Plex Sans"],
+                      "label-sm": ["JetBrains Mono"],
+                      "headline-lg": ["IBM Plex Sans"],
+                      "headline-md": ["IBM Plex Sans"],
+                      "label-md": ["JetBrains Mono"]
+              },
+              "fontSize": {
+                      "headline-lg-mobile": ["28px", {"lineHeight": "36px", "fontWeight": "600"}],
+                      "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                      "body-sm": ["14px", {"lineHeight": "20px", "fontWeight": "400"}],
+                      "headline-sm": ["20px", {"lineHeight": "28px", "fontWeight": "600"}],
+                      "body-lg": ["18px", {"lineHeight": "28px", "fontWeight": "400"}],
+                      "label-sm": ["12px", {"lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "500"}],
+                      "headline-lg": ["32px", {"lineHeight": "40px", "letterSpacing": "-0.02em", "fontWeight": "600"}],
+                      "headline-md": ["24px", {"lineHeight": "32px", "letterSpacing": "-0.01em", "fontWeight": "600"}],
+                      "label-md": ["14px", {"lineHeight": "20px", "letterSpacing": "0.02em", "fontWeight": "500"}]
+              }
+            },
+          },
+        }
+    </script>
+</head>
+<body class="bg-background text-on-surface font-body-md industrial-grid min-h-screen flex">
+<!-- SideNavBar (Authority: JSON) -->
+<aside class="hidden md:flex h-screen w-64 flex-col bg-surface-container border-r border-outline-variant py-md px-sm sticky top-0">
+<div class="px-md py-sm mb-lg">
+<h1 class="font-headline-sm text-headline-sm font-bold text-primary">GreenPulse OS</h1>
+<p class="font-label-md text-label-md text-on-surface-variant">City Command Center</p>
+</div>
+<nav class="flex-1 space-y-1">
+<a class="flex items-center gap-3 px-md py-sm bg-primary-container text-on-primary-container font-bold rounded-lg transition-all duration-100" href="#">
+<span class="material-symbols-outlined" data-icon="dashboard">dashboard</span>
+<span class="font-label-md text-label-md">Overview</span>
+</a>
+<a class="flex items-center gap-3 px-md py-sm text-on-surface-variant hover:bg-surface-container-highest transition-all active:scale-95 duration-100" href="#">
+<span class="material-symbols-outlined" data-icon="factory">factory</span>
+<span class="font-label-md text-label-md">Infrastructure</span>
+</a>
+<a class="flex items-center gap-3 px-md py-sm text-on-surface-variant hover:bg-surface-container-highest transition-all active:scale-95 duration-100" href="#">
+<span class="material-symbols-outlined" data-icon="traffic">traffic</span>
+<span class="font-label-md text-label-md">Traffic Control</span>
+</a>
+<a class="flex items-center gap-3 px-md py-sm text-on-surface-variant hover:bg-surface-container-highest transition-all active:scale-95 duration-100" href="#">
+<span class="material-symbols-outlined" data-icon="electric_bolt">electric_bolt</span>
+<span class="font-label-md text-label-md">Energy Grid</span>
+</a>
+<a class="flex items-center gap-3 px-md py-sm text-on-surface-variant hover:bg-surface-container-highest transition-all active:scale-95 duration-100" href="#">
+<span class="material-symbols-outlined" data-icon="security">security</span>
+<span class="font-label-md text-label-md">Public Safety</span>
+</a>
+<a class="flex items-center gap-3 px-md py-sm text-on-surface-variant hover:bg-surface-container-highest transition-all active:scale-95 duration-100" href="#">
+<span class="material-symbols-outlined" data-icon="health_and_safety">health_and_safety</span>
+<span class="font-label-md text-label-md">System Health</span>
+</a>
+</nav>
+<div class="mt-auto pt-md border-t border-outline-variant space-y-1">
+<button class="w-full bg-primary text-on-primary py-sm rounded-lg font-label-md text-label-md font-bold mb-md hover:opacity-90 active:scale-95">DEPLOY NODE</button>
+<a class="flex items-center gap-3 px-md py-sm text-on-surface-variant hover:bg-surface-container-highest transition-all" href="#">
+<span class="material-symbols-outlined" data-icon="help">help</span>
+<span class="font-label-md text-label-md">Support</span>
+</a>
+<a class="flex items-center gap-3 px-md py-sm text-on-surface-variant hover:bg-surface-container-highest transition-all" href="#">
+<span class="material-symbols-outlined" data-icon="history">history</span>
+<span class="font-label-md text-label-md">Logs</span>
+</a>
+</div>
+</aside>
+<div class="flex-1 flex flex-col min-w-0">
+<!-- TopNavBar (Authority: JSON) -->
+<header class="w-full h-16 flex justify-between items-center px-lg bg-surface border-b border-outline-variant z-20">
+<div class="flex items-center gap-lg">
+<span class="font-headline-md text-headline-md font-bold text-on-surface md:hidden">GreenPulse OS</span>
+<div class="hidden sm:flex items-center bg-surface-container-low px-md py-xs rounded-lg border border-outline-variant w-80">
+<span class="material-symbols-outlined text-outline" data-icon="search">search</span>
+<input class="bg-transparent border-none focus:ring-0 text-body-sm w-full" placeholder="Global search..." type="text"/>
+</div>
+</div>
+<div class="flex items-center gap-md">
+<div class="flex items-center gap-sm">
+<button class="p-sm text-secondary hover:bg-surface-container-high transition-colors focus:ring-2 focus:ring-primary-container rounded-full relative">
+<span class="material-symbols-outlined" data-icon="notifications">notifications</span>
+<span class="absolute top-2 right-2 w-2 h-2 bg-error rounded-full"></span>
+</button>
+<button class="p-sm text-secondary hover:bg-surface-container-high transition-colors focus:ring-2 focus:ring-primary-container rounded-full">
+<span class="material-symbols-outlined" data-icon="settings">settings</span>
+</button>
+</div>
+<div class="h-8 w-[1px] bg-outline-variant mx-xs"></div>
+<div class="flex items-center gap-sm">
+<img class="w-8 h-8 rounded-full border border-outline-variant object-cover" data-alt="A clean, professional headshot of a smart city operator in a sleek, minimalist industrial setting. The person wears a modern dark navy utility jacket. The background is a blurred high-tech control center with soft light-mode colors like white and silver. The image evokes precision, expertise, and a calm technological atmosphere." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAD09-082oHCEciQVIEx8tBH_IwEIdAwA2mLO8e291Fco_Cvrwk6S37SqdIYqBCqxiRAoLjMqloDuDOiHmzIdI0GkL06-lKtMHXSLWswQklLGCQoinkaNGaHZSZsW5ihkyJUFJvqHhHf0zlHQiAqDRTtUavk85CeVUflOd9RBnfPAbZNTUzwBuwSpmBgHQCFoQ_8kVTngmolC-UutNNG5eRv0XxWlOs2oJT9Lpm9LuJuNnAGXKavz-yumHXqpWWOqKpFx-fkTAZQ8mV"/>
+<span class="hidden lg:block font-label-md text-label-md font-bold">Operator 09</span>
+</div>
+</div>
+</header>
+<!-- Main Content Canvas -->
+<main class="p-lg flex-1 overflow-y-auto">
+<div class="max-w-7xl mx-auto space-y-lg">
+<!-- Page Header -->
+<div class="flex justify-between items-end">
+<div>
+<h2 class="font-headline-lg text-headline-lg text-on-surface">System Performance Overview</h2>
+<p class="font-body-md text-body-md text-secondary">Real-time telemetry and urban infrastructure health metrics.</p>
+</div>
+<div class="flex gap-sm">
+<div class="bg-surface border border-outline-variant px-md py-sm rounded flex items-center gap-sm">
+<span class="w-3 h-3 bg-primary-container rounded-full animate-pulse"></span>
+<span class="font-label-sm text-label-sm text-on-surface-variant">SYSTEM LIVE</span>
+</div>
+</div>
+</div>
+<!-- Dashboard Bento Grid -->
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-lg">
+<!-- Main Gauge Card -->
+<div class="lg:col-span-4 bg-surface-container-lowest border border-outline-variant p-lg flex flex-col items-center justify-center text-center shadow-sm">
+<h3 class="font-label-md text-label-md text-secondary mb-lg">CITY HEALTH SCORE</h3>
+<div class="gauge-container mb-md">
+<svg class="gauge-svg w-full h-full" viewbox="0 0 210 210">
+<circle class="gauge-background" cx="105" cy="105" r="100"></circle>
+<circle class="gauge-progress" cx="105" cy="105" r="100"></circle>
+</svg>
+<div class="absolute inset-0 flex flex-col items-center justify-center">
+<span class="font-headline-lg text-[48px] text-on-surface leading-none">91</span>
+<span class="font-label-sm text-label-sm text-secondary">OPTIMAL</span>
+</div>
+</div>
+<p class="font-body-sm text-body-sm text-secondary px-md">Infrastructure integrity is at peak performance. No major outages reported.</p>
+</div>
+<!-- Energy Load Chart -->
+<div class="lg:col-span-8 bg-surface-container-lowest border border-outline-variant p-lg shadow-sm">
+<div class="flex justify-between items-center mb-xl">
+<h3 class="font-label-md text-label-md text-secondary">GRID ENERGY LOAD</h3>
+<div class="flex gap-md">
+<div class="flex items-center gap-xs">
+<span class="w-3 h-3 bg-primary-container"></span>
+<span class="font-label-sm text-label-sm">Solar</span>
+</div>
+<div class="flex items-center gap-xs">
+<span class="w-3 h-3 bg-secondary"></span>
+<span class="font-label-sm text-label-sm">Thermal</span>
+</div>
+</div>
+</div>
+<div class="h-48 flex items-end justify-between gap-sm border-b border-outline-variant pb-xs relative">
+<!-- Background Grid Lines -->
+<div class="absolute inset-0 flex flex-col justify-between pointer-events-none">
+<div class="w-full border-t border-surface-container h-0"></div>
+<div class="w-full border-t border-surface-container h-0"></div>
+<div class="w-full border-t border-surface-container h-0"></div>
+</div>
+<!-- Bar Charts (Simulated) -->
+<div class="flex-1 flex flex-col justify-end items-center group relative h-full">
+<div class="w-full flex gap-[2px] items-end h-full">
+<div class="bg-primary-container flex-1 transition-all duration-500" style="height: 40%"></div>
+<div class="bg-secondary flex-1 transition-all duration-500" style="height: 30%"></div>
+</div>
+<span class="mt-2 font-label-sm text-[10px] text-secondary">06:00</span>
+</div>
+<div class="flex-1 flex flex-col justify-end items-center group relative h-full">
+<div class="w-full flex gap-[2px] items-end h-full">
+<div class="bg-primary-container flex-1 transition-all duration-500" style="height: 65%"></div>
+<div class="bg-secondary flex-1 transition-all duration-500" style="height: 25%"></div>
+</div>
+<span class="mt-2 font-label-sm text-[10px] text-secondary">09:00</span>
+</div>
+<div class="flex-1 flex flex-col justify-end items-center group relative h-full">
+<div class="w-full flex gap-[2px] items-end h-full">
+<div class="bg-primary-container flex-1 transition-all duration-500" style="height: 85%"></div>
+<div class="bg-secondary flex-1 transition-all duration-500" style="height: 15%"></div>
+</div>
+<span class="mt-2 font-label-sm text-[10px] text-secondary">12:00</span>
+</div>
+<div class="flex-1 flex flex-col justify-end items-center group relative h-full">
+<div class="w-full flex gap-[2px] items-end h-full">
+<div class="bg-primary-container flex-1 transition-all duration-500" style="height: 75%"></div>
+<div class="bg-secondary flex-1 transition-all duration-500" style="height: 20%"></div>
+</div>
+<span class="mt-2 font-label-sm text-[10px] text-secondary">15:00</span>
+</div>
+<div class="flex-1 flex flex-col justify-end items-center group relative h-full">
+<div class="w-full flex gap-[2px] items-end h-full">
+<div class="bg-primary-container flex-1 transition-all duration-500" style="height: 50%"></div>
+<div class="bg-secondary flex-1 transition-all duration-500" style="height: 45%"></div>
+</div>
+<span class="mt-2 font-label-sm text-[10px] text-secondary">18:00</span>
+</div>
+<div class="flex-1 flex flex-col justify-end items-center group relative h-full">
+<div class="w-full flex gap-[2px] items-end h-full">
+<div class="bg-primary-container flex-1 transition-all duration-500" style="height: 15%"></div>
+<div class="bg-secondary flex-1 transition-all duration-500" style="height: 60%"></div>
+</div>
+<span class="mt-2 font-label-sm text-[10px] text-secondary">21:00</span>
+</div>
+</div>
+</div>
+<!-- KPI Row -->
+<div class="lg:col-span-12 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-md">
+<!-- Water Quality -->
+<div class="bg-white border border-outline-variant p-md shadow-sm">
+<div class="flex items-center gap-sm mb-sm text-secondary">
+<span class="material-symbols-outlined" data-icon="water_drop">water_drop</span>
+<h4 class="font-label-md text-label-md">Water Quality</h4>
+</div>
+<div class="flex justify-between items-end">
+<div>
+<span class="font-headline-sm text-headline-sm">99.8%</span>
+<p class="font-label-sm text-label-sm text-secondary">Purity Index</p>
+</div>
+<div class="text-right">
+<span class="font-label-md text-label-md text-primary">62 PSI</span>
+<p class="font-label-sm text-label-sm text-secondary">Pressure</p>
+</div>
+</div>
+</div>
+<!-- Active Alerts -->
+<div class="bg-white border border-outline-variant p-md shadow-sm">
+<div class="flex items-center gap-sm mb-sm text-error">
+<span class="material-symbols-outlined" data-icon="warning">warning</span>
+<h4 class="font-label-md text-label-md">Active Alerts</h4>
+</div>
+<div class="flex justify-between items-end">
+<div>
+<span class="font-headline-sm text-headline-sm text-error">02</span>
+<p class="font-label-sm text-label-sm text-secondary">Priority</p>
+</div>
+<div class="text-right">
+<span class="font-label-md text-label-md text-on-surface">14</span>
+<p class="font-label-sm text-label-sm text-secondary">Advisories</p>
+</div>
+</div>
+</div>
+<!-- Air Quality -->
+<div class="bg-white border border-outline-variant p-md shadow-sm">
+<div class="flex items-center gap-sm mb-sm text-secondary">
+<span class="material-symbols-outlined" data-icon="air">air</span>
+<h4 class="font-label-md text-label-md">Air Quality</h4>
+</div>
+<div class="flex justify-between items-end">
+<div>
+<span class="font-headline-sm text-headline-sm">18 AQI</span>
+<p class="font-label-sm text-label-sm text-secondary">Very Good</p>
+</div>
+<div class="w-16 h-1 rounded-full bg-surface-container overflow-hidden mb-sm">
+<div class="h-full bg-primary-container" style="width: 15%"></div>
+</div>
+</div>
+</div>
+<!-- Traffic Flow -->
+<div class="bg-white border border-outline-variant p-md shadow-sm">
+<div class="flex items-center gap-sm mb-sm text-secondary">
+<span class="material-symbols-outlined" data-icon="traffic">traffic</span>
+<h4 class="font-label-md text-label-md">Traffic Flow</h4>
+</div>
+<div class="flex justify-between items-end">
+<div>
+<span class="font-headline-sm text-headline-sm">84%</span>
+<p class="font-label-sm text-label-sm text-secondary">Efficiency</p>
+</div>
+<div class="text-right text-primary flex items-center">
+<span class="material-symbols-outlined text-sm" data-icon="trending_up">trending_up</span>
+<span class="font-label-md text-label-md ml-1">+4.2%</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Live System Log -->
+<div class="lg:col-span-12 bg-surface-container-lowest border border-outline-variant shadow-sm overflow-hidden flex flex-col">
+<div class="bg-on-surface px-md py-sm flex justify-between items-center">
+<h3 class="font-label-md text-label-md text-white flex items-center gap-sm">
+<span class="material-symbols-outlined text-primary-container" data-icon="terminal">terminal</span>
+                                LIVE SYSTEM INTERACTION LOG
+                            </h3>
+<span class="font-label-sm text-[10px] text-tertiary-fixed-dim">RECV_FREQ: 124ms</span>
+</div>
+<div class="h-64 overflow-y-auto bg-[#1a1c1c] p-md font-label-sm text-label-sm" id="log-terminal">
+<div class="space-y-1 text-[#d1d5db]">
+<p><span class="text-[#fca311]">[14:22:01]</span> NODE_041 STATUS: SUCCESS - Energy routing complete.</p>
+<p><span class="text-[#fca311]">[14:22:15]</span> SYS_AUTH: Admin "Operator 09" logged in from local terminal.</p>
+<p><span class="text-[#fca311]">[14:22:45]</span> SENSOR_AIR_09: Data broadcast successful. AQI stable.</p>
+<p><span class="text-[#fca311]">[14:23:10]</span> GRID_LOAD_BALANCER: Solar production peak reached (8.4GW).</p>
+<p><span class="text-error">[14:23:42]</span> ALERT: Minor water pressure fluctuation detected in Sector 7G.</p>
+<p><span class="text-[#fca311]">[14:24:00]</span> LOG: Automatic correction procedure initiated for Sector 7G.</p>
+<p><span class="text-[#10b981]">[14:24:12]</span> SUCCESS: Pressure stabilized in Sector 7G (62 PSI).</p>
+<p><span class="text-[#fca311]">[14:25:01]</span> HEARTBEAT: All 1,402 infrastructure nodes responding.</p>
+<p><span class="text-[#fca311]">[14:25:33]</span> TRAFFIC_SYS: Redirecting light congestion on Bridge A-14.</p>
+</div>
+</div>
+</div>
+</div>
+</div>
+</main>
+</div>
+<!-- Micro-interaction Scripts -->
+<script>
+        // Log auto-scrolling effect
+        const terminal = document.getElementById('log-terminal');
+        const messages = [
+            "NODE_092: Scheduled diagnostics complete.",
+            "THERMAL_SEC: Output increased to compensate cloud cover.",
+            "PUBLIC_SAFETY: Camera array 04 synchronized.",
+            "GRID_BATTERY: Reserve capacity at 94%.",
+            "WATER_SYS: Filtration cycles operating at nominal speed.",
+            "WEATHER_FEED: Predicted 0.0mm precipitation for next 6h."
+        ];
+
+        setInterval(() => {
+            const time = new Date().toLocaleTimeString('en-GB', { hour12: false });
+            const msg = messages[Math.floor(Math.random() * messages.length)];
+            const p = document.createElement('p');
+            p.innerHTML = `<span class="text-[#fca311]">[${time}]</span> ${msg}`;
+            p.className = "fade-in opacity-0 transition-opacity duration-500";
+            terminal.appendChild(p);
+            setTimeout(() => p.classList.remove('opacity-0'), 50);
+            terminal.scrollTop = terminal.scrollHeight;
+            if (terminal.children.length > 50) terminal.removeChild(terminal.children[0]);
+        }, 5000);
+
+        // Gauge update micro-interaction
+        window.addEventListener('load', () => {
+            const progress = document.querySelector('.gauge-progress');
+            progress.style.strokeDashoffset = "56.5";
+        });
+    </script>
+</body></html>

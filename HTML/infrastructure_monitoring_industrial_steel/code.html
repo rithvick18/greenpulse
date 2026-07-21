@@ -1,0 +1,505 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>GreenPulse OS | Infrastructure Monitoring</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&amp;family=Playfair+Display:wght@700;900&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<style>
+        @font-face {
+            font-family: 'Material Symbols Outlined';
+            font-style: normal;
+        }
+
+        .material-symbols-outlined {
+            font-family: 'Material Symbols Outlined';
+            font-weight: normal;
+            font-style: normal;
+            font-size: 20px;
+            display: inline-block;
+            line-height: 1;
+            text-transform: none;
+            letter-spacing: normal;
+            word-wrap: normal;
+            white-space: nowrap;
+            direction: ltr;
+        }
+
+        /* Industrial Grid Background */
+        .industrial-grid {
+            background-image: 
+                linear-gradient(to right, rgba(161, 142, 121, 0.05) 1px, transparent 1px),
+                linear-gradient(to bottom, rgba(161, 142, 121, 0.05) 1px, transparent 1px);
+            background-size: 32px 32px;
+        }
+
+        /* Mechanical Gauge Animation */
+        @keyframes segment-blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.3; }
+        }
+        .gauge-active {
+            animation: segment-blink 1s steps(2, start) infinite;
+        }
+
+        /* Custom Scrollbar for Industrial Feel */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #131313;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #353535;
+            border: 2px solid #131313;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #a18e79;
+        }
+
+        .panel-header-clip {
+            clip-path: polygon(0 0, 100% 0, 100% 100%, 8px 100%, 0 calc(100% - 8px));
+        }
+    </style>
+<!-- Tailwind Config Execution -->
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "error-container": "#93000a",
+                    "primary-fixed-dim": "#ffb95f",
+                    "surface-dim": "#131313",
+                    "primary-container": "#fca311",
+                    "primary": "#ffc887",
+                    "on-primary-fixed-variant": "#653e00",
+                    "on-error-container": "#ffdad6",
+                    "surface-tint": "#ffb95f",
+                    "surface-container-lowest": "#0e0e0e",
+                    "outline": "#a18e79",
+                    "surface-variant": "#353535",
+                    "background": "#131313",
+                    "tertiary": "#d1d2d2",
+                    "on-secondary-fixed-variant": "#41484e",
+                    "on-surface-variant": "#d9c3ad",
+                    "tertiary-fixed-dim": "#c6c6c6",
+                    "surface": "#131313",
+                    "on-tertiary-fixed-variant": "#454747",
+                    "surface-bright": "#393939",
+                    "inverse-primary": "#855300",
+                    "outline-variant": "#534433",
+                    "on-secondary-container": "#b2b9c1",
+                    "on-error": "#690005",
+                    "inverse-surface": "#e2e2e2",
+                    "on-surface": "#e2e2e2",
+                    "surface-container-high": "#2a2a2a",
+                    "on-primary-fixed": "#2a1700",
+                    "on-tertiary-fixed": "#1a1c1c",
+                    "secondary-container": "#434a51",
+                    "on-tertiary": "#2f3131",
+                    "tertiary-container": "#b6b6b6",
+                    "tertiary-fixed": "#e2e2e2",
+                    "secondary": "#c0c7cf",
+                    "on-primary": "#472a00",
+                    "on-background": "#e2e2e2",
+                    "surface-container-highest": "#353535",
+                    "secondary-fixed-dim": "#c0c7cf",
+                    "secondary-fixed": "#dce3ec",
+                    "on-tertiary-container": "#464848",
+                    "on-secondary": "#2a3138",
+                    "inverse-on-surface": "#303030",
+                    "on-secondary-fixed": "#151c22",
+                    "on-primary-container": "#663f00",
+                    "primary-fixed": "#ffddb8",
+                    "surface-container-low": "#1b1b1b",
+                    "error": "#ffb4ab",
+                    "surface-container": "#1f1f1f"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0px",
+                    "lg": "0px",
+                    "xl": "0px",
+                    "full": "9999px"
+            },
+            "spacing": {
+                    "margin-mobile": "16px",
+                    "gutter": "16px",
+                    "border-heavy": "4px",
+                    "unit": "4px",
+                    "margin-desktop": "32px",
+                    "border-thick": "2px"
+            },
+            "fontFamily": {
+                    "label-caps": ["JetBrains Mono"],
+                    "headline-md": ["Playfair Display"],
+                    "body-md": ["JetBrains Mono"],
+                    "code-data": ["JetBrains Mono"]
+            }
+          },
+        },
+      }
+    </script>
+</head>
+<body class="bg-background text-on-surface font-body-md industrial-grid selection:bg-primary-container selection:text-on-primary-container min-h-screen overflow-x-hidden">
+<!-- Global Application Layout -->
+<div class="flex h-screen overflow-hidden">
+<!-- SideNavBar (Predicted Content Mapping) -->
+<aside class="hidden md:flex flex-col h-full py-gutter px-4 bg-surface-container-low/40 backdrop-blur-xl border-r border-primary/30 w-64 shadow-[0_0_20px_rgba(255,177,195,0.1)] z-50">
+<div class="mb-8 px-2">
+<h1 class="font-headline-md text-headline-md font-bold tracking-tighter text-primary">GreenPulse OS</h1>
+<p class="font-label-sm text-[10px] uppercase tracking-widest text-on-surface-variant opacity-70">City Management v2.4</p>
+</div>
+<nav class="flex-grow space-y-1">
+<!-- Overview -->
+<a class="flex items-center gap-3 px-3 py-3 text-on-surface-variant font-medium hover:bg-secondary-container/20 hover:text-secondary transition-all duration-150 group" href="#">
+<span class="material-symbols-outlined group-hover:scale-110 transition-transform" data-icon="dashboard">dashboard</span>
+<span class="text-label-caps uppercase text-[12px]">Overview</span>
+</a>
+<!-- Infrastructure (Active) -->
+<a class="flex items-center gap-3 px-3 py-3 text-primary font-bold border-r-2 border-primary bg-primary/10 transition-all duration-150 scale-95 origin-left" href="#">
+<span class="material-symbols-outlined" data-icon="architecture" style="font-variation-settings: 'FILL' 1;">architecture</span>
+<span class="text-label-caps uppercase text-[12px]">Infrastructure</span>
+</a>
+<!-- Traffic Control -->
+<a class="flex items-center gap-3 px-3 py-3 text-on-surface-variant font-medium hover:bg-secondary-container/20 hover:text-secondary transition-all duration-150 group" href="#">
+<span class="material-symbols-outlined group-hover:scale-110 transition-transform" data-icon="traffic">traffic</span>
+<span class="text-label-caps uppercase text-[12px]">Traffic Control</span>
+</a>
+<!-- Energy Grid -->
+<a class="flex items-center gap-3 px-3 py-3 text-on-surface-variant font-medium hover:bg-secondary-container/20 hover:text-secondary transition-all duration-150 group" href="#">
+<span class="material-symbols-outlined group-hover:scale-110 transition-transform" data-icon="bolt">bolt</span>
+<span class="text-label-caps uppercase text-[12px]">Energy Grid</span>
+</a>
+<!-- Public Safety -->
+<a class="flex items-center gap-3 px-3 py-3 text-on-surface-variant font-medium hover:bg-secondary-container/20 hover:text-secondary transition-all duration-150 group" href="#">
+<span class="material-symbols-outlined group-hover:scale-110 transition-transform" data-icon="security">security</span>
+<span class="text-label-caps uppercase text-[12px]">Public Safety</span>
+</a>
+<!-- System Health -->
+<a class="flex items-center gap-3 px-3 py-3 text-on-surface-variant font-medium hover:bg-secondary-container/20 hover:text-secondary transition-all duration-150 group" href="#">
+<span class="material-symbols-outlined group-hover:scale-110 transition-transform" data-icon="health_and_safety">health_and_safety</span>
+<span class="text-label-caps uppercase text-[12px]">System Health</span>
+</a>
+</nav>
+<div class="mt-auto pt-6 border-t border-outline-variant/30">
+<button class="w-full bg-error-container text-on-error-container font-label-caps text-[11px] py-3 tracking-tighter hover:bg-red-600 transition-colors mb-4 flex items-center justify-center gap-2">
+<span class="material-symbols-outlined text-sm" data-icon="warning">warning</span>
+                    EMERGENCY OVERRIDE
+                </button>
+<div class="space-y-1">
+<a class="flex items-center gap-3 px-3 py-2 text-on-surface-variant font-medium hover:text-tertiary" href="#">
+<span class="material-symbols-outlined" data-icon="settings">settings</span>
+<span class="text-label-caps uppercase text-[10px]">Settings</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2 text-on-surface-variant font-medium hover:text-tertiary" href="#">
+<span class="material-symbols-outlined" data-icon="help_center">help_center</span>
+<span class="text-label-caps uppercase text-[10px]">Support</span>
+</a>
+</div>
+</div>
+</aside>
+<!-- Main Content Area -->
+<main class="flex-grow flex flex-col h-full bg-background overflow-y-auto">
+<!-- TopAppBar -->
+<header class="flex justify-between items-center w-full px-gutter h-16 bg-surface-container-low/40 backdrop-blur-xl border-b border-primary/30 shadow-[0_0_15px_rgba(0,219,233,0.1)] z-40 sticky top-0">
+<div class="flex items-center gap-4">
+<div class="md:hidden">
+<span class="material-symbols-outlined text-primary" data-icon="menu">menu</span>
+</div>
+<div class="hidden md:flex items-center gap-2">
+<span class="text-on-surface-variant opacity-40 font-code-data text-xs">ROOT / INFRASTRUCTURE / GEOSPATIAL</span>
+</div>
+</div>
+<div class="flex items-center gap-6">
+<!-- Search Bar Integrated -->
+<div class="hidden lg:flex items-center bg-black border-2 border-outline-variant px-3 py-1 gap-2 focus-within:border-primary-fixed-dim transition-colors">
+<span class="material-symbols-outlined text-on-surface-variant text-sm" data-icon="search">search</span>
+<input class="bg-transparent border-none focus:ring-0 text-xs font-code-data text-primary uppercase w-48 placeholder:text-outline-variant" placeholder="QUERY COORDINATES..." type="text"/>
+</div>
+<div class="flex items-center gap-4 text-on-surface-variant">
+<span class="material-symbols-outlined cursor-pointer hover:text-tertiary" data-icon="notifications_active">notifications_active</span>
+<span class="material-symbols-outlined cursor-pointer hover:text-tertiary" data-icon="settings_input_component">settings_input_component</span>
+<span class="material-symbols-outlined cursor-pointer hover:text-tertiary" data-icon="terminal">terminal</span>
+<div class="h-8 w-8 bg-surface-container-high border-2 border-primary/40 flex items-center justify-center overflow-hidden">
+<img class="w-full h-full object-cover grayscale opacity-80 contrast-125" data-alt="A high-contrast profile portrait of a futuristic systems operator, captured in a gritty, industrial noir style. The lighting is dominated by amber and cyan tech glows, reflecting off a tactical visor. The aesthetic is sharp, mechanical, and professional, perfectly fitting the GreenPulse OS brand identity of engineering precision and high-utility logistics." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCrBzDy1Xiyi5Mqhda_yWueykV65tDaSKtWU_BvOt32OrKpDCbyFREx3NkLn9N0ivVX442nN0Mvsa4EF2b9se2iw5YoLYYrwxxkW7tcjTpXTS-c9hvW4Si0hmJZ1M1nXjNKjH_yjWcCZuNJ57RDoLl4QPxgUD2TSaV_kZIYN1Z564CaCA0u27fUE4LYuITkIljVTLoXwC-La85I8fCW3gv_zYNJsBRhanCIA-oe1w27spg6670VtQPY_ZbD7UIHCU6iutCRLzYJXiXy"/>
+</div>
+</div>
+</div>
+</header>
+<!-- Dashboard Content -->
+<div class="p-4 md:p-8 space-y-6">
+<!-- Geospatial Section -->
+<section class="grid grid-cols-1 lg:grid-cols-4 gap-6">
+<div class="lg:col-span-3 border-2 border-outline relative bg-surface-container-lowest min-h-[500px]">
+<!-- Panel Bar -->
+<div class="h-8 bg-outline flex items-center px-4 justify-between">
+<span class="font-label-caps text-black text-[11px]">GEOSPATIAL STRUCTURAL INTEGRITY_v4.0.1</span>
+<div class="flex gap-4">
+<span class="font-code-data text-black text-[10px]">LAT: 40.7128° N</span>
+<span class="font-code-data text-black text-[10px]">LNG: 74.0060° W</span>
+</div>
+</div>
+<!-- Map Mockup -->
+<div class="absolute inset-8 border-2 border-outline-variant/30 flex items-center justify-center">
+<div class="absolute inset-0 bg-[url('placeholder')] opacity-20 grayscale brightness-150 mix-blend-screen" data-alt="A highly detailed architectural wireframe map of a dense urban metropolis, rendered in a technical drafting style. The layout shows glowing grid lines, district boundaries, and structural load heatmaps in shades of amber and steel gray. The mood is clinical and diagnostic, emphasizing heavy engineering and urban planning precision."></div>
+<!-- Tactical Overlay Elements -->
+<div class="relative z-10 w-full h-full p-4 pointer-events-none">
+<div class="absolute top-10 left-10 p-2 bg-black/80 border-2 border-primary text-primary font-code-data text-[10px] pointer-events-auto">
+                                    DISTRICT_07: NOMINAL<br/>
+                                    STRESS: 12.4%
+                                </div>
+<div class="absolute top-1/2 left-1/3 p-2 bg-black/80 border-2 border-error text-error font-code-data text-[10px] pointer-events-auto">
+                                    DISTRICT_12: ALERT<br/>
+                                    SUBSIDENCE: 4.2mm
+                                </div>
+<div class="absolute bottom-20 right-20 p-2 bg-black/80 border-2 border-primary text-primary font-code-data text-[10px] pointer-events-auto">
+                                    BRIDGE_MAIN: MAINTENANCE<br/>
+                                    CREW: ALPHA-9
+                                </div>
+</div>
+<div class="absolute inset-0 industrial-grid opacity-20"></div>
+</div>
+<!-- Zoom Controls -->
+<div class="absolute bottom-12 right-12 flex flex-col gap-2">
+<button class="w-10 h-10 border-2 border-outline bg-black text-white hover:bg-white hover:text-black transition-colors flex items-center justify-center">
+<span class="material-symbols-outlined" data-icon="add">add</span>
+</button>
+<button class="w-10 h-10 border-2 border-outline bg-black text-white hover:bg-white hover:text-black transition-colors flex items-center justify-center">
+<span class="material-symbols-outlined" data-icon="remove">remove</span>
+</button>
+<button class="w-10 h-10 border-2 border-outline bg-black text-white hover:bg-white hover:text-black transition-colors flex items-center justify-center">
+<span class="material-symbols-outlined" data-icon="layers">layers</span>
+</button>
+</div>
+</div>
+<!-- System Log Feed -->
+<div class="border-2 border-outline bg-surface-container flex flex-col max-h-[500px]">
+<div class="h-8 bg-outline flex items-center px-4">
+<span class="font-label-caps text-black text-[11px]">MAINTENANCE_LOG_STREAM</span>
+</div>
+<div class="p-4 overflow-y-auto font-code-data text-[11px] space-y-4">
+<div class="flex gap-2 text-primary-fixed-dim">
+<span class="opacity-50 shrink-0">14:22:01</span>
+<span>[INFO] D-07 WATER VALVE CYCLED SUCCESS</span>
+</div>
+<div class="flex gap-2 text-error">
+<span class="opacity-50 shrink-0">14:21:45</span>
+<span>[WARN] D-12 SEWAGE SENSOR NO-RESPONSE</span>
+</div>
+<div class="flex gap-2 text-on-surface">
+<span class="opacity-50 shrink-0">14:19:12</span>
+<span>[USER] OP-A7 AUTHENTICATED AT TERM_3</span>
+</div>
+<div class="flex gap-2 text-primary-fixed-dim">
+<span class="opacity-50 shrink-0">14:15:33</span>
+<span>[INFO] GRID_RESONANCE AT 60.01 HZ</span>
+</div>
+<div class="flex gap-2 text-primary-fixed-dim">
+<span class="opacity-50 shrink-0">14:12:00</span>
+<span>[TASK] COMM_UPTIME_CHECK INITIATED</span>
+</div>
+<div class="flex gap-2 text-on-surface-variant">
+<span class="opacity-50 shrink-0">14:08:22</span>
+<span>[SYS] GARBAGE COMPACTION OPTIMIZED</span>
+</div>
+<div class="flex gap-2 text-error">
+<span class="opacity-50 shrink-0">13:59:01</span>
+<span>[FAIL] TOWER_42_ANTENNA_HEATER_FAULT</span>
+</div>
+</div>
+<div class="mt-auto p-4 border-t border-outline-variant bg-surface-container-low">
+<div class="flex items-center gap-2 mb-2">
+<div class="w-2 h-2 bg-primary gauge-active"></div>
+<span class="text-[10px] font-label-caps text-primary uppercase">Live Stream Connected</span>
+</div>
+<div class="h-1 bg-surface-variant overflow-hidden">
+<div class="h-full bg-primary w-1/3"></div>
+</div>
+</div>
+</div>
+</section>
+<!-- Status Pods Grid -->
+<section class="grid grid-cols-1 md:grid-cols-3 gap-6">
+<!-- Water Supply Pod -->
+<div class="border-2 border-outline bg-surface-container hover:border-primary transition-colors group">
+<div class="h-6 bg-outline flex items-center px-3 group-hover:bg-primary transition-colors">
+<span class="font-label-caps text-black text-[10px]">WATER SUPPLY MONITOR</span>
+</div>
+<div class="p-6 flex flex-col gap-4">
+<div class="flex justify-between items-end">
+<div>
+<div class="text-3xl font-headline-md text-primary">84.2%</div>
+<div class="text-[10px] font-label-caps text-on-surface-variant uppercase">Reservoir Capacity</div>
+</div>
+<span class="material-symbols-outlined text-4xl text-outline-variant group-hover:text-primary/50 transition-colors" data-icon="water_drop">water_drop</span>
+</div>
+<div class="space-y-2">
+<div class="flex justify-between text-[10px] font-code-data">
+<span>PRESSURE_PSI</span>
+<span class="text-primary">64.1</span>
+</div>
+<div class="h-4 flex gap-1">
+<div class="flex-grow bg-primary/80"></div>
+<div class="flex-grow bg-primary/80"></div>
+<div class="flex-grow bg-primary/80"></div>
+<div class="flex-grow bg-primary/80"></div>
+<div class="flex-grow bg-primary/20"></div>
+</div>
+<div class="flex justify-between text-[10px] font-code-data">
+<span>PURITY_LEVEL</span>
+<span class="text-primary">99.8%</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Waste Management Pod -->
+<div class="border-2 border-outline bg-surface-container hover:border-primary transition-colors group">
+<div class="h-6 bg-outline flex items-center px-3 group-hover:bg-primary transition-colors">
+<span class="font-label-caps text-black text-[10px]">WASTE EFFICIENCY</span>
+</div>
+<div class="p-6 flex flex-col gap-4">
+<div class="flex justify-between items-end">
+<div>
+<div class="text-3xl font-headline-md text-primary">91.0%</div>
+<div class="text-[10px] font-label-caps text-on-surface-variant uppercase">Collection Rate</div>
+</div>
+<span class="material-symbols-outlined text-4xl text-outline-variant group-hover:text-primary/50 transition-colors" data-icon="recycling">recycling</span>
+</div>
+<div class="space-y-2">
+<div class="flex justify-between text-[10px] font-code-data">
+<span>INCINERATOR_TEMP</span>
+<span class="text-primary">1,142°C</span>
+</div>
+<div class="h-4 flex gap-1">
+<div class="flex-grow bg-primary/80"></div>
+<div class="flex-grow bg-primary/80"></div>
+<div class="flex-grow bg-primary/80"></div>
+<div class="flex-grow bg-primary/80"></div>
+<div class="flex-grow bg-primary/80"></div>
+</div>
+<div class="flex justify-between text-[10px] font-code-data">
+<span>RECYCLING_LOAD</span>
+<span class="text-primary">42.8t/h</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Telecom Uptime Pod -->
+<div class="border-2 border-outline bg-surface-container hover:border-primary transition-colors group">
+<div class="h-6 bg-outline flex items-center px-3 group-hover:bg-primary transition-colors">
+<span class="font-label-caps text-black text-[10px]">COMM_NET STATUS</span>
+</div>
+<div class="p-6 flex flex-col gap-4">
+<div class="flex justify-between items-end">
+<div>
+<div class="text-3xl font-headline-md text-primary">99.998%</div>
+<div class="text-[10px] font-label-caps text-on-surface-variant uppercase">Uptime Aggregate</div>
+</div>
+<span class="material-symbols-outlined text-4xl text-outline-variant group-hover:text-primary/50 transition-colors" data-icon="router">router</span>
+</div>
+<div class="space-y-2">
+<div class="flex justify-between text-[10px] font-code-data">
+<span>SAT_LINK_LATENCY</span>
+<span class="text-primary">12ms</span>
+</div>
+<div class="h-4 flex gap-1">
+<div class="flex-grow bg-primary/80"></div>
+<div class="flex-grow bg-primary/80"></div>
+<div class="flex-grow bg-primary/80"></div>
+<div class="flex-grow bg-primary/80"></div>
+<div class="flex-grow bg-primary/80"></div>
+</div>
+<div class="flex justify-between text-[10px] font-code-data">
+<span>5G_PENETRATION</span>
+<span class="text-primary">94.4%</span>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- Data Analysis Bento Section -->
+<section class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 pb-8">
+<div class="lg:col-span-2 border-2 border-outline-variant bg-black p-6 flex flex-col justify-between min-h-[200px]">
+<div>
+<div class="flex items-center gap-2 mb-2">
+<span class="material-symbols-outlined text-primary" data-icon="analytics">analytics</span>
+<h3 class="font-label-caps text-[12px] text-white">HISTORICAL INTEGRITY ANALYSIS</h3>
+</div>
+<p class="text-[11px] font-body-md text-on-surface-variant leading-relaxed mb-6">
+                                Longitudinal study of the central business district shows a 0.2% increase in structural fatigue over the last 18 months due to increased traffic density. Recommend preemptive bracing on sector 4A.
+                            </p>
+</div>
+<div class="flex gap-4">
+<button class="bg-primary text-black font-label-caps text-[10px] px-4 py-2 hover:bg-white transition-colors">VIEW FULL REPORT</button>
+<button class="border-2 border-outline text-white font-label-caps text-[10px] px-4 py-2 hover:border-primary transition-colors">EXPORT DATA</button>
+</div>
+</div>
+<div class="border-2 border-outline-variant bg-surface-container-high p-6 flex flex-col items-center justify-center text-center">
+<div class="relative w-24 h-24 mb-4">
+<svg class="w-full h-full transform -rotate-90" viewbox="0 0 36 36">
+<path d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="#353535" stroke-width="4"></path>
+<path d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="#ffc887" stroke-dasharray="75, 100" stroke-width="4"></path>
+</svg>
+<div class="absolute inset-0 flex flex-col items-center justify-center">
+<span class="text-xl font-headline-md text-primary">75%</span>
+</div>
+</div>
+<h4 class="font-label-caps text-[10px] uppercase text-on-surface">Resource Efficiency</h4>
+</div>
+<div class="border-2 border-outline-variant bg-surface-container-low p-6 flex flex-col justify-between">
+<div class="flex justify-between items-start">
+<span class="material-symbols-outlined text-primary" data-icon="construction" style="font-variation-settings: 'FILL' 1;">construction</span>
+<span class="font-code-data text-[10px] text-on-surface-variant">ACTIVE_TEAMS: 12</span>
+</div>
+<div class="space-y-1">
+<div class="text-2xl font-headline-md text-on-surface">42</div>
+<div class="text-[10px] font-label-caps text-on-surface-variant uppercase">Pending Work Orders</div>
+</div>
+<div class="h-1 w-full bg-outline-variant">
+<div class="h-full bg-error w-2/3"></div>
+</div>
+</div>
+</section>
+</div>
+</main>
+</div>
+<!-- Bottom Mobile Nav (Fallback) -->
+<nav class="md:hidden fixed bottom-0 left-0 right-0 h-16 bg-surface-container-lowest border-t border-primary/30 flex justify-around items-center z-50">
+<span class="material-symbols-outlined text-primary" data-icon="dashboard">dashboard</span>
+<span class="material-symbols-outlined text-on-surface-variant" data-icon="architecture">architecture</span>
+<span class="material-symbols-outlined text-on-surface-variant" data-icon="bolt">bolt</span>
+<span class="material-symbols-outlined text-on-surface-variant" data-icon="security">security</span>
+<span class="material-symbols-outlined text-on-surface-variant" data-icon="settings">settings</span>
+</nav>
+<script>
+        // Simple Interaction Logic for Log Feed
+        setInterval(() => {
+            const logs = document.querySelector('.overflow-y-auto.font-code-data');
+            const newLog = document.createElement('div');
+            newLog.className = 'flex gap-2 text-primary-fixed-dim opacity-0 transition-opacity duration-500';
+            const now = new Date();
+            const time = `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}:${now.getSeconds().toString().padStart(2, '0')}`;
+            
+            const messages = [
+                "[INFO] SENSOR_NODE_88 ACKNOWLEDGED",
+                "[INFO] SUBWAY_VENTILATION_NOMINAL",
+                "[INFO] WATER_TURBINE_PRESSURE_STABLE",
+                "[INFO] GRID_RESONANCE_OPTIMIZED",
+                "[SYS] DATA_BUFFER_FLUSHED"
+            ];
+            
+            newLog.innerHTML = `<span class="opacity-50 shrink-0">${time}</span><span>${messages[Math.floor(Math.random() * messages.length)]}</span>`;
+            logs.insertBefore(newLog, logs.firstChild);
+            
+            setTimeout(() => newLog.classList.remove('opacity-0'), 100);
+            
+            if(logs.children.length > 20) {
+                logs.removeChild(logs.lastChild);
+            }
+        }, 3000);
+    </script>
+</body></html>

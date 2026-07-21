@@ -1,0 +1,483 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>GreenPulse OS | Industrial Steel Dashboard</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700;800&amp;family=Playfair+Display:wght@700;900&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "on-tertiary-fixed-variant": "#454747",
+                    "tertiary-container": "#b6b6b6",
+                    "on-secondary-container": "#b2b9c1",
+                    "on-tertiary-container": "#464848",
+                    "surface-tint": "#ffb95f",
+                    "secondary-fixed-dim": "#c0c7cf",
+                    "on-surface": "#e2e2e2",
+                    "on-primary-fixed-variant": "#653e00",
+                    "on-primary": "#472a00",
+                    "on-tertiary": "#2f3131",
+                    "on-error-container": "#ffdad6",
+                    "secondary-fixed": "#dce3ec",
+                    "tertiary": "#d1d2d2",
+                    "on-secondary": "#2a3138",
+                    "surface-container-highest": "#353535",
+                    "surface-container-low": "#1b1b1b",
+                    "on-primary-fixed": "#2a1700",
+                    "error": "#ffb4ab",
+                    "surface-container-high": "#2a2a2a",
+                    "on-error": "#690005",
+                    "on-surface-variant": "#d9c3ad",
+                    "surface-bright": "#393939",
+                    "on-secondary-fixed": "#151c22",
+                    "inverse-on-surface": "#303030",
+                    "primary-fixed-dim": "#ffb95f",
+                    "primary": "#ffc887",
+                    "inverse-surface": "#e2e2e2",
+                    "surface-container-lowest": "#0e0e0e",
+                    "primary-fixed": "#ffddb8",
+                    "secondary-container": "#434a51",
+                    "background": "#131313",
+                    "surface-variant": "#353535",
+                    "surface-dim": "#131313",
+                    "tertiary-fixed-dim": "#c6c6c6",
+                    "on-background": "#e2e2e2",
+                    "surface": "#131313",
+                    "surface-container": "#1f1f1f",
+                    "tertiary-fixed": "#e2e2e2",
+                    "on-tertiary-fixed": "#1a1c1c",
+                    "outline-variant": "#534433",
+                    "outline": "#a18e79",
+                    "on-primary-container": "#663f00",
+                    "secondary": "#c0c7cf",
+                    "primary-container": "#fca311",
+                    "inverse-primary": "#855300",
+                    "on-secondary-fixed-variant": "#41484e",
+                    "error-container": "#93000a"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.25rem",
+                    "lg": "0.5rem",
+                    "xl": "0.75rem",
+                    "full": "9999px"
+            },
+            "spacing": {
+                    "gutter": "16px",
+                    "border-heavy": "4px",
+                    "margin-desktop": "32px",
+                    "unit": "4px",
+                    "border-thick": "2px",
+                    "margin-mobile": "16px"
+            },
+            "fontFamily": {
+                    "headline-lg-mobile": ["Playfair Display"],
+                    "body-md": ["JetBrains Mono"],
+                    "headline-lg": ["Playfair Display"],
+                    "body-lg": ["JetBrains Mono"],
+                    "label-caps": ["JetBrains Mono"],
+                    "code-data": ["JetBrains Mono"],
+                    "headline-md": ["Playfair Display"]
+            },
+            "fontSize": {
+                    "headline-lg-mobile": ["32px", {"lineHeight": "1.2", "fontWeight": "900"}],
+                    "body-md": ["14px", {"lineHeight": "1.5", "fontWeight": "400"}],
+                    "headline-lg": ["48px", {"lineHeight": "1.1", "letterSpacing": "-0.02em", "fontWeight": "900"}],
+                    "body-lg": ["18px", {"lineHeight": "1.6", "fontWeight": "400"}],
+                    "label-caps": ["12px", {"lineHeight": "1", "letterSpacing": "0.1em", "fontWeight": "700"}],
+                    "code-data": ["14px", {"lineHeight": "1.2", "fontWeight": "500"}],
+                    "headline-md": ["24px", {"lineHeight": "1.3", "fontWeight": "700"}]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+            vertical-align: middle;
+        }
+        .grid-bg {
+            background-image: linear-gradient(to right, rgba(255,255,255,0.02) 1px, transparent 1px),
+                              linear-gradient(to bottom, rgba(255,255,255,0.02) 1px, transparent 1px);
+            background-size: 32px 32px;
+        }
+        .led-pulse {
+            animation: pulse 1.5s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+        }
+        @keyframes pulse {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.4; transform: scale(0.9); }
+        }
+        .segmented-progress div {
+            border-right: 2px solid #131313;
+        }
+        .segmented-progress div:last-child {
+            border-right: none;
+        }
+    </style>
+</head>
+<body class="bg-background text-on-background font-body-md selection:bg-primary-container selection:text-on-primary-container grid-bg min-h-screen flex overflow-hidden">
+<!-- SideNavBar (from JSON) -->
+<aside class="h-screen w-64 border-r border-primary/30 bg-surface-container-low/40 backdrop-blur-xl flex flex-col py-gutter px-4 shrink-0 shadow-[0_0_20px_rgba(255,177,195,0.1)]">
+<div class="mb-10">
+<h1 class="font-headline-md text-headline-md font-bold tracking-tighter text-primary">GreenPulse OS</h1>
+<p class="font-label-sm text-label-sm text-on-surface-variant/70 mt-1 uppercase tracking-widest">City Management v2.4</p>
+</div>
+<nav class="flex-1 space-y-1">
+<!-- Active: Overview -->
+<a class="flex items-center gap-3 px-4 py-3 text-primary font-bold border-r-2 border-primary bg-primary/10 transition-all duration-150 active:scale-95" href="#">
+<span class="material-symbols-outlined" data-icon="dashboard">dashboard</span>
+<span class="font-label-caps text-label-caps">Overview</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-on-surface-variant font-medium hover:bg-secondary-container/20 hover:text-secondary transition-all duration-150 active:scale-95" href="#">
+<span class="material-symbols-outlined" data-icon="architecture">architecture</span>
+<span class="font-label-caps text-label-caps">Infrastructure</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-on-surface-variant font-medium hover:bg-secondary-container/20 hover:text-secondary transition-all duration-150 active:scale-95" href="#">
+<span class="material-symbols-outlined" data-icon="traffic">traffic</span>
+<span class="font-label-caps text-label-caps">Traffic Control</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-on-surface-variant font-medium hover:bg-secondary-container/20 hover:text-secondary transition-all duration-150 active:scale-95" href="#">
+<span class="material-symbols-outlined" data-icon="bolt">bolt</span>
+<span class="font-label-caps text-label-caps">Energy Grid</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-on-surface-variant font-medium hover:bg-secondary-container/20 hover:text-secondary transition-all duration-150 active:scale-95" href="#">
+<span class="material-symbols-outlined" data-icon="security">security</span>
+<span class="font-label-caps text-label-caps">Public Safety</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-on-surface-variant font-medium hover:bg-secondary-container/20 hover:text-secondary transition-all duration-150 active:scale-95" href="#">
+<span class="material-symbols-outlined" data-icon="health_and_safety">health_and_safety</span>
+<span class="font-label-caps text-label-caps">System Health</span>
+</a>
+</nav>
+<div class="mt-auto space-y-4 pt-6 border-t border-primary/20">
+<button class="w-full bg-primary-container text-on-primary-container font-label-caps text-label-caps py-4 font-bold tracking-widest border-2 border-on-primary hover:bg-white hover:text-black transition-none">
+                EMERGENCY OVERRIDE
+            </button>
+<div class="space-y-1">
+<a class="flex items-center gap-3 px-4 py-2 text-on-surface-variant font-medium hover:text-tertiary transition-all" href="#">
+<span class="material-symbols-outlined" data-icon="settings">settings</span>
+<span class="font-label-caps text-label-caps">Settings</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-2 text-on-surface-variant font-medium hover:text-tertiary transition-all" href="#">
+<span class="material-symbols-outlined" data-icon="help_center">help_center</span>
+<span class="font-label-caps text-label-caps">Support</span>
+</a>
+</div>
+<div class="flex items-center gap-3 px-2 py-4">
+<img class="w-10 h-10 rounded-none border border-primary/40 object-cover grayscale brightness-75 contrast-125" data-alt="Close up profile portrait of a professional city systems operator with industrial headphones, technical gear, set against a dark control room background with screens, teal and amber lighting." src="https://lh3.googleusercontent.com/aida-public/AB6AXuD8nO01anDfNsRM-_BLkUaP5VOnAieBwraDKOrL7x3A1asUgCrQcKP8klnEn19venukM50NfbbjrpG61D2CABHUQiPJ6Mt9wxlMTb5lSUDURyPJ8nSo2VX0dHlrM8VemT7cycdCxfHsps5W045AoXXrOfZhgVbELjjrcSYnZhutDt7LIiR9QLufdx0OSTHYcika8mgYvYzBbtlv0N2HQDsZ-VQoWgWgq8kI3OI61o1-W0NdfGCbZ9RAexIwZKX6t-qfKawVLiMeRX25"/>
+<div>
+<p class="text-[10px] font-label-caps text-primary leading-none">OPERATOR</p>
+<p class="text-on-surface font-bold text-xs">ALPHA-7</p>
+</div>
+</div>
+</div>
+</aside>
+<!-- Main Canvas -->
+<main class="flex-1 flex flex-col min-w-0 overflow-y-auto">
+<!-- TopAppBar (from JSON) -->
+<header class="w-full h-16 border-b border-primary/30 bg-surface-container-low/40 backdrop-blur-xl flex justify-between items-center px-gutter shrink-0 shadow-[0_0_15px_rgba(0,219,233,0.1)]">
+<div class="flex items-center gap-4">
+<h2 class="font-headline-md text-headline-md font-bold text-primary">Overview</h2>
+<div class="h-6 w-[2px] bg-primary/30"></div>
+<p class="font-label-caps text-label-caps text-on-surface-variant flex items-center gap-2">
+<span class="w-2 h-2 bg-primary-container led-pulse"></span>
+                    SYSTEMS NOMINAL
+                </p>
+</div>
+<div class="flex items-center gap-6">
+<div class="hidden lg:flex items-center bg-black border-2 border-secondary/30 px-3 py-1 gap-2 focus-within:border-primary-container transition-colors">
+<span class="material-symbols-outlined text-secondary text-sm" data-icon="search">search</span>
+<input class="bg-transparent border-none focus:ring-0 text-xs font-label-caps text-on-surface placeholder:text-secondary/40 w-48" placeholder="QUERY DATABASE..." type="text"/>
+</div>
+<div class="flex items-center gap-4 text-on-surface-variant">
+<button class="hover:text-tertiary transition-all"><span class="material-symbols-outlined" data-icon="notifications_active">notifications_active</span></button>
+<button class="hover:text-tertiary transition-all"><span class="material-symbols-outlined" data-icon="settings_input_component">settings_input_component</span></button>
+<button class="hover:text-tertiary transition-all"><span class="material-symbols-outlined" data-icon="terminal">terminal</span></button>
+</div>
+</div>
+</header>
+<!-- Content Area -->
+<div class="p-gutter lg:p-margin-desktop space-y-6 max-w-7xl">
+<!-- Top Hero Grid -->
+<div class="grid grid-cols-1 md:grid-cols-12 gap-0 border-thick border-secondary">
+<!-- City Health Score -->
+<div class="md:col-span-4 p-6 border-b md:border-b-0 md:border-r border-secondary flex flex-col justify-between bg-surface-container-lowest">
+<div>
+<div class="bg-secondary px-2 py-1 inline-block mb-4">
+<span class="text-background font-bold text-[10px] tracking-widest uppercase">System Criticality</span>
+</div>
+<h3 class="font-label-caps text-label-caps text-secondary mb-2">City Health Score</h3>
+</div>
+<div class="flex items-baseline gap-2">
+<span class="text-[96px] font-black leading-none text-primary-container tracking-tighter">91</span>
+<div class="pb-4">
+<p class="text-primary-container font-bold text-xl uppercase">Optimal</p>
+<p class="text-on-surface-variant text-[10px] font-label-caps">+2.4% Δ 24h</p>
+</div>
+</div>
+<div class="mt-6">
+<div class="flex justify-between text-[10px] font-label-caps text-secondary mb-2 uppercase">
+<span>Diagnostic Reliability</span>
+<span>99.8%</span>
+</div>
+<div class="h-3 w-full bg-surface-container flex segmented-progress">
+<div class="h-full bg-primary-container w-[10%]"></div>
+<div class="h-full bg-primary-container w-[10%]"></div>
+<div class="h-full bg-primary-container w-[10%]"></div>
+<div class="h-full bg-primary-container w-[10%]"></div>
+<div class="h-full bg-primary-container w-[10%]"></div>
+<div class="h-full bg-primary-container w-[10%]"></div>
+<div class="h-full bg-primary-container w-[10%]"></div>
+<div class="h-full bg-primary-container w-[10%]"></div>
+<div class="h-full bg-primary-container w-[10%]"></div>
+<div class="h-full bg-surface-container-highest w-[10%]"></div>
+</div>
+</div>
+</div>
+<!-- Real-time Energy Load Graph -->
+<div class="md:col-span-8 p-0 flex flex-col bg-surface-container-low relative overflow-hidden">
+<div class="bg-secondary/10 flex items-center justify-between px-4 py-2 border-b border-secondary">
+<span class="text-[10px] font-label-caps font-bold text-secondary uppercase tracking-widest">Grid Energy Load [KW/h]</span>
+<div class="flex items-center gap-4">
+<span class="text-[10px] font-label-caps text-primary-container flex items-center gap-1">
+<span class="w-1.5 h-1.5 bg-primary-container"></span> SOLAR
+                            </span>
+<span class="text-[10px] font-label-caps text-tertiary flex items-center gap-1">
+<span class="w-1.5 h-1.5 bg-tertiary"></span> THERMAL
+                            </span>
+</div>
+</div>
+<div class="flex-1 min-h-[240px] relative p-6">
+<div class="absolute inset-0 grid-bg opacity-20 pointer-events-none"></div>
+<!-- Placeholder for Energy Graph -->
+<div class="w-full h-full flex items-end gap-1">
+<!-- Visual bar representation of real-time data -->
+<div class="flex-1 bg-primary/20 border-t border-primary h-[60%]"></div>
+<div class="flex-1 bg-primary/20 border-t border-primary h-[65%]"></div>
+<div class="flex-1 bg-primary/20 border-t border-primary h-[58%]"></div>
+<div class="flex-1 bg-primary-container h-[75%] border-t-2 border-white"></div>
+<div class="flex-1 bg-primary/20 border-t border-primary h-[70%]"></div>
+<div class="flex-1 bg-primary/20 border-t border-primary h-[62%]"></div>
+<div class="flex-1 bg-primary/20 border-t border-primary h-[68%]"></div>
+<div class="flex-1 bg-primary/20 border-t border-primary h-[80%]"></div>
+<div class="flex-1 bg-primary/20 border-t border-primary h-[75%]"></div>
+<div class="flex-1 bg-primary/20 border-t border-primary h-[72%]"></div>
+<div class="flex-1 bg-primary/20 border-t border-primary h-[65%]"></div>
+<div class="flex-1 bg-primary/20 border-t border-primary h-[60%]"></div>
+<div class="flex-1 bg-primary/20 border-t border-primary h-[55%]"></div>
+<div class="flex-1 bg-primary/20 border-t border-primary h-[50%]"></div>
+<div class="flex-1 bg-primary/20 border-t border-primary h-[52%]"></div>
+</div>
+<div class="absolute bottom-4 left-4 flex gap-4">
+<div>
+<p class="text-[8px] font-label-caps text-on-surface-variant uppercase">Current Demand</p>
+<p class="text-xl font-bold font-code-data text-on-surface">14.2 GW</p>
+</div>
+<div>
+<p class="text-[8px] font-label-caps text-on-surface-variant uppercase">Surplus</p>
+<p class="text-xl font-bold font-code-data text-primary-container">+1.8 GW</p>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Metrics Grid -->
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+<!-- Water Quality -->
+<div class="bg-surface-container border-thick border-secondary p-4 relative group hover:border-primary-container transition-colors">
+<div class="flex justify-between items-start mb-6">
+<div>
+<p class="text-[10px] font-label-caps text-secondary uppercase tracking-widest">Hydraulic Sector</p>
+<h4 class="font-bold text-lg text-on-surface">Water Quality</h4>
+</div>
+<span class="material-symbols-outlined text-primary-container" data-icon="opacity">opacity</span>
+</div>
+<div class="flex items-center justify-between border-t border-secondary/30 pt-4">
+<div>
+<p class="text-[10px] font-label-caps text-on-surface-variant uppercase">Purity</p>
+<p class="text-2xl font-bold font-code-data">99.2%</p>
+</div>
+<div class="text-right">
+<p class="text-[10px] font-label-caps text-on-surface-variant uppercase">Pressure</p>
+<p class="text-2xl font-bold font-code-data">5.4 bar</p>
+</div>
+</div>
+<div class="mt-4 flex items-center gap-2">
+<div class="w-2 h-2 rounded-full bg-primary-container led-pulse"></div>
+<span class="text-[9px] font-bold text-primary-container uppercase">Filtration Active</span>
+</div>
+</div>
+<!-- Alerts -->
+<div class="bg-surface-container border-thick border-error p-4 relative overflow-hidden group">
+<div class="absolute top-0 right-0 w-16 h-16 pointer-events-none">
+<div class="absolute top-[-25px] right-[-25px] w-[50px] h-[50px] bg-error rotate-45"></div>
+</div>
+<div class="flex justify-between items-start mb-6">
+<div>
+<p class="text-[10px] font-label-caps text-error uppercase tracking-widest">Security Layer</p>
+<h4 class="font-bold text-lg text-on-surface">Active Alerts</h4>
+</div>
+<span class="material-symbols-outlined text-error" data-icon="warning">warning</span>
+</div>
+<div class="flex items-center justify-between border-t border-error/30 pt-4">
+<div>
+<p class="text-[10px] font-label-caps text-on-surface-variant uppercase">Priority 1</p>
+<p class="text-2xl font-bold font-code-data text-error">02</p>
+</div>
+<div class="text-right">
+<p class="text-[10px] font-label-caps text-on-surface-variant uppercase">Advisories</p>
+<p class="text-2xl font-bold font-code-data">14</p>
+</div>
+</div>
+<div class="mt-4 bg-error/10 border border-error/30 p-2">
+<p class="text-[9px] font-bold text-error uppercase">Grid Overload: District 4 - Sector B</p>
+</div>
+</div>
+<!-- Air Quality -->
+<div class="bg-surface-container border-thick border-secondary p-4 relative group hover:border-primary-container transition-colors">
+<div class="flex justify-between items-start mb-6">
+<div>
+<p class="text-[10px] font-label-caps text-secondary uppercase tracking-widest">Environmental</p>
+<h4 class="font-bold text-lg text-on-surface">Air Quality</h4>
+</div>
+<span class="material-symbols-outlined text-primary-container" data-icon="air">air</span>
+</div>
+<div class="flex items-center justify-between border-t border-secondary/30 pt-4">
+<div>
+<p class="text-[10px] font-label-caps text-on-surface-variant uppercase">AQI Index</p>
+<p class="text-2xl font-bold font-code-data">32</p>
+</div>
+<div class="text-right">
+<p class="text-[10px] font-label-caps text-on-surface-variant uppercase">PM 2.5</p>
+<p class="text-2xl font-bold font-code-data">8.1</p>
+</div>
+</div>
+<div class="mt-4 flex items-center gap-2">
+<div class="w-2 h-2 rounded-full bg-primary-container"></div>
+<span class="text-[9px] font-bold text-primary-container uppercase">Status: Good</span>
+</div>
+</div>
+<!-- Traffic Flow -->
+<div class="bg-surface-container border-thick border-secondary p-4 relative group hover:border-primary-container transition-colors">
+<div class="flex justify-between items-start mb-6">
+<div>
+<p class="text-[10px] font-label-caps text-secondary uppercase tracking-widest">Logistics Hub</p>
+<h4 class="font-bold text-lg text-on-surface">Traffic Flow</h4>
+</div>
+<span class="material-symbols-outlined text-primary-container" data-icon="traffic">traffic</span>
+</div>
+<div class="flex items-center justify-between border-t border-secondary/30 pt-4">
+<div>
+<p class="text-[10px] font-label-caps text-on-surface-variant uppercase">Congestion</p>
+<p class="text-2xl font-bold font-code-data">18%</p>
+</div>
+<div class="text-right">
+<p class="text-[10px] font-label-caps text-on-surface-variant uppercase">AV Uptime</p>
+<p class="text-2xl font-bold font-code-data">99.9%</p>
+</div>
+</div>
+<div class="mt-4 flex items-center gap-2">
+<div class="w-2 h-2 rounded-full bg-primary-container"></div>
+<span class="text-[9px] font-bold text-primary-container uppercase">Flow Nominal</span>
+</div>
+</div>
+</div>
+<!-- Detailed System Log -->
+<div class="border-thick border-secondary bg-surface-container-lowest overflow-hidden">
+<div class="bg-secondary text-background px-4 py-2 flex justify-between items-center">
+<span class="font-bold text-[10px] tracking-widest uppercase">System Interaction Logs // Live Feed</span>
+<span class="font-code-data text-[10px]">T-MINUS 00:00:42</span>
+</div>
+<div class="p-0 overflow-x-auto">
+<table class="w-full text-left font-code-data text-xs border-collapse">
+<thead class="bg-surface-container-high text-secondary border-b border-secondary/30">
+<tr>
+<th class="px-4 py-3 font-bold uppercase tracking-wider">Timestamp</th>
+<th class="px-4 py-3 font-bold uppercase tracking-wider">Sub-System</th>
+<th class="px-4 py-3 font-bold uppercase tracking-wider">Action / Event</th>
+<th class="px-4 py-3 font-bold uppercase tracking-wider text-right">Status</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-secondary/10">
+<tr class="hover:bg-primary/5 transition-colors">
+<td class="px-4 py-3 text-on-surface-variant">14:22:08.411</td>
+<td class="px-4 py-3 font-bold text-on-surface">GRID_CONTROL</td>
+<td class="px-4 py-3 text-on-surface-variant">Load shedding initiated in District 12 sub-sector 4.</td>
+<td class="px-4 py-3 text-right"><span class="bg-primary/20 text-primary border border-primary px-2 py-0.5 text-[10px] font-bold">EXECUTED</span></td>
+</tr>
+<tr class="hover:bg-primary/5 transition-colors">
+<td class="px-4 py-3 text-on-surface-variant">14:21:55.002</td>
+<td class="px-4 py-3 font-bold text-on-surface">TRAFFIC_AI</td>
+<td class="px-4 py-3 text-on-surface-variant">Rerouting heavy freight vehicles around Main St maintenance zone.</td>
+<td class="px-4 py-3 text-right"><span class="bg-primary/20 text-primary border border-primary px-2 py-0.5 text-[10px] font-bold">ACTIVE</span></td>
+</tr>
+<tr class="hover:bg-error/10 transition-colors">
+<td class="px-4 py-3 text-on-surface-variant">14:21:42.990</td>
+<td class="px-4 py-3 font-bold text-error">SEC_NODE_09</td>
+<td class="px-4 py-3 text-on-surface-variant">Unscheduled access attempt detected at Perimeter Fence B-4.</td>
+<td class="px-4 py-3 text-right"><span class="bg-error/20 text-error border border-error px-2 py-0.5 text-[10px] font-bold">ALERT</span></td>
+</tr>
+<tr class="hover:bg-primary/5 transition-colors">
+<td class="px-4 py-3 text-on-surface-variant">14:21:30.115</td>
+<td class="px-4 py-3 font-bold text-on-surface">HYDRO_PUMP</td>
+<td class="px-4 py-3 text-on-surface-variant">Pressure variance of ±0.2bar detected in Reservoir 3 supply line.</td>
+<td class="px-4 py-3 text-right"><span class="bg-secondary/20 text-secondary border border-secondary px-2 py-0.5 text-[10px] font-bold">LOGGED</span></td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</div>
+<!-- System Footer -->
+<footer class="mt-auto border-t border-secondary/30 p-4 bg-surface-container-low/50 backdrop-blur-md flex flex-wrap justify-between items-center gap-4">
+<div class="flex items-center gap-6">
+<div class="flex flex-col">
+<span class="text-[8px] font-label-caps text-secondary uppercase">Local Time</span>
+<span class="text-xs font-bold font-code-data" id="current-time">14:22:45 UTC</span>
+</div>
+<div class="flex flex-col">
+<span class="text-[8px] font-label-caps text-secondary uppercase">Processor Load</span>
+<span class="text-xs font-bold font-code-data text-primary-container">24%</span>
+</div>
+<div class="flex flex-col">
+<span class="text-[8px] font-label-caps text-secondary uppercase">Uptime</span>
+<span class="text-xs font-bold font-code-data">412D 14H 22M</span>
+</div>
+</div>
+<div class="flex items-center gap-3">
+<span class="text-[10px] font-label-caps text-on-surface-variant">GREENPULSE OS v2.4.0-STABLE</span>
+<div class="flex items-center bg-black border border-secondary/30 rounded-full px-2 py-1 gap-1.5">
+<div class="w-1.5 h-1.5 bg-primary-container rounded-full"></div>
+<span class="text-[9px] font-bold text-on-surface">ENCRYPTED</span>
+</div>
+</div>
+</footer>
+</main>
+<script>
+        // Simple micro-interaction for time
+        function updateTime() {
+            const now = new Date();
+            const timeStr = now.toISOString().split('T')[1].split('.')[0] + ' UTC';
+            document.getElementById('current-time').innerText = timeStr;
+        }
+        setInterval(updateTime, 1000);
+        updateTime();
+
+        // Add visual glitches randomly for atmospheric "industrial" feel
+        setInterval(() => {
+            const h1 = document.querySelector('h1');
+            if(Math.random() > 0.95) {
+                h1.style.opacity = '0.7';
+                setTimeout(() => h1.style.opacity = '1', 50);
+            }
+        }, 100);
+    </script>
+</body></html>

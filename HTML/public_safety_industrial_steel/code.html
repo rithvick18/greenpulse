@@ -1,0 +1,396 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Public Safety | GreenPulse OS</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700;800&amp;family=Playfair+Display:wght@700;900&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "error-container": "#93000a",
+                    "primary-fixed-dim": "#ffb95f",
+                    "surface-dim": "#131313",
+                    "primary-container": "#fca311",
+                    "primary": "#ffc887",
+                    "on-primary-fixed-variant": "#653e00",
+                    "on-error-container": "#ffdad6",
+                    "surface-tint": "#ffb95f",
+                    "surface-container-lowest": "#0e0e0e",
+                    "outline": "#a18e79",
+                    "surface-variant": "#353535",
+                    "background": "#131313",
+                    "tertiary": "#d1d2d2",
+                    "on-secondary-fixed-variant": "#41484e",
+                    "on-surface-variant": "#d9c3ad",
+                    "tertiary-fixed-dim": "#c6c6c6",
+                    "surface": "#131313",
+                    "on-tertiary-fixed-variant": "#454747",
+                    "surface-variant": "#353535",
+                    "background": "#131313",
+                    "on-tertiary": "#2f3131",
+                    "secondary-container": "#434a51",
+                    "on-surface": "#e2e2e2",
+                    "surface-container-high": "#2a2a2a",
+                    "surface-container-low": "#1b1b1b",
+                    "surface-container": "#1f1f1f",
+                    "on-background": "#e2e2e2",
+                    "secondary": "#c0c7cf",
+                    "on-secondary": "#2a3138",
+            },
+            "spacing": {
+                    "margin-mobile": "16px",
+                    "gutter": "16px",
+                    "border-heavy": "4px",
+                    "unit": "4px",
+                    "margin-desktop": "32px",
+                    "border-thick": "2px"
+            },
+            "fontFamily": {
+                    "label-caps": ["JetBrains Mono"],
+                    "headline-md": ["Playfair Display"],
+                    "body-md": ["JetBrains Mono"],
+                    "code-data": ["JetBrains Mono"]
+            }
+          }
+        }
+      }
+    </script>
+<style>
+      body {
+        background-color: #131313;
+        background-image: radial-gradient(circle at 2px 2px, rgba(161, 142, 121, 0.05) 1px, transparent 0);
+        background-size: 32px 32px;
+        color: #e2e2e2;
+      }
+      .material-symbols-outlined {
+        font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+      }
+      .industrial-border {
+        border: 2px solid #353535;
+      }
+      .status-led {
+        width: 8px;
+        height: 8px;
+        display: inline-block;
+      }
+      @keyframes blink {
+        0%, 100% { opacity: 1; }
+        50% { opacity: 0.3; }
+      }
+      .animate-blink {
+        animation: blink 1s infinite;
+      }
+      .panel-header {
+        background-color: #353535;
+        height: 24px;
+        display: flex;
+        align-items: center;
+        padding: 0 8px;
+      }
+    </style>
+</head>
+<body class="flex overflow-hidden h-screen font-body-md text-body-md">
+<!-- Sidebar: GreenPulse OS (SideNavBar) -->
+<aside class="hidden md:flex flex-col h-full py-gutter px-4 w-64 border-r border-primary/30 bg-surface-container-low/40 backdrop-blur-xl shadow-[0_0_20px_rgba(255,177,195,0.1)]">
+<div class="mb-8">
+<h1 class="font-headline-md text-headline-md font-bold tracking-tighter text-primary">GreenPulse OS</h1>
+<p class="font-label-sm text-[10px] uppercase tracking-widest text-on-surface-variant">City Management v2.4</p>
+</div>
+<nav class="flex-1 space-y-2">
+<a class="flex items-center gap-3 px-3 py-2 text-on-surface-variant font-medium hover:bg-secondary-container/20 hover:text-secondary transition-all duration-150" href="#">
+<span class="material-symbols-outlined">dashboard</span>
+<span>Overview</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2 text-on-surface-variant font-medium hover:bg-secondary-container/20 hover:text-secondary transition-all duration-150" href="#">
+<span class="material-symbols-outlined">architecture</span>
+<span>Infrastructure</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2 text-on-surface-variant font-medium hover:bg-secondary-container/20 hover:text-secondary transition-all duration-150" href="#">
+<span class="material-symbols-outlined">traffic</span>
+<span>Traffic Control</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2 text-on-surface-variant font-medium hover:bg-secondary-container/20 hover:text-secondary transition-all duration-150" href="#">
+<span class="material-symbols-outlined">bolt</span>
+<span>Energy Grid</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2 text-primary font-bold border-r-2 border-primary bg-primary/10 transition-all duration-150" href="#">
+<span class="material-symbols-outlined">security</span>
+<span>Public Safety</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2 text-on-surface-variant font-medium hover:bg-secondary-container/20 hover:text-secondary transition-all duration-150" href="#">
+<span class="material-symbols-outlined">health_and_safety</span>
+<span>System Health</span>
+</a>
+</nav>
+<div class="mt-auto space-y-4 pt-6 border-t border-outline-variant">
+<button class="w-full py-2 bg-primary-container text-on-primary-container font-bold text-[12px] tracking-tighter active:scale-95 transition-transform">
+                EMERGENCY OVERRIDE
+            </button>
+<div class="space-y-1">
+<a class="flex items-center gap-3 px-3 py-2 text-on-surface-variant font-medium hover:text-secondary" href="#">
+<span class="material-symbols-outlined">settings</span>
+<span>Settings</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2 text-on-surface-variant font-medium hover:text-secondary" href="#">
+<span class="material-symbols-outlined">help_center</span>
+<span>Support</span>
+</a>
+</div>
+</div>
+</aside>
+<!-- Main Canvas -->
+<main class="flex-1 flex flex-col h-full relative">
+<!-- TopAppBar -->
+<header class="flex justify-between items-center w-full px-gutter h-16 bg-surface-container-low/40 backdrop-blur-xl border-b border-primary/30 shadow-[0_0_15px_rgba(0,219,233,0.1)] z-10">
+<div class="flex items-center gap-4">
+<span class="material-symbols-outlined md:hidden text-primary">menu</span>
+<div class="font-headline-md text-headline-md font-bold text-primary">Public Safety</div>
+</div>
+<div class="flex items-center gap-6">
+<div class="hidden lg:flex items-center bg-surface-container-high px-4 py-1 border border-outline-variant">
+<span class="material-symbols-outlined text-sm text-on-surface-variant mr-2">search</span>
+<input class="bg-transparent border-none focus:ring-0 text-label-caps text-[10px] w-48 text-on-surface uppercase" placeholder="SEARCH SYSTEM..." type="text"/>
+</div>
+<div class="flex items-center gap-4">
+<span class="material-symbols-outlined text-tertiary hover:text-primary cursor-pointer active:opacity-80">notifications_active</span>
+<span class="material-symbols-outlined text-tertiary hover:text-primary cursor-pointer active:opacity-80">settings_input_component</span>
+<span class="material-symbols-outlined text-tertiary hover:text-primary cursor-pointer active:opacity-80">terminal</span>
+<div class="h-8 w-8 industrial-border overflow-hidden">
+<img class="w-full h-full object-cover" data-alt="Close-up cinematic headshot of a technical system operator in a futuristic dark room. The lighting is harsh and directional, catching the metallic details of their headset. Aesthetic is heavy industrial with deep shadows and sharp, high-contrast highlights consistent with a tech-heavy workstation environment." src="https://lh3.googleusercontent.com/aida-public/AB6AXuA1IoXgt6YVW3sFuSnvB6xGCUmErxgdPaCCRpe8xuAzskde8xCQdPadG2HaD1SRJhRISQMklwRu86iNzlJH-lGnMw_pnXZogDFXpP8SNgEcvlOIsNDlquysI6J38m-hQp4Ousp543iCXL61CSOv5l0OS0ul9WoveVf9Q8IVBVVpz8G3d1El-0WsKP87o74eDJFcEO-exeFwIhZdOJQylNr0YEte2SpzXyy2UnROj2vi88C82G3adQM1MEUg2C_ypYWVfTmDiQhoPNx8"/>
+</div>
+</div>
+</div>
+</header>
+<!-- Dynamic Content Area -->
+<section class="flex-1 overflow-hidden grid grid-cols-12 gap-0">
+<!-- Unit Directory (Left Panel) -->
+<div class="col-span-12 md:col-span-3 industrial-border flex flex-col bg-surface-dim">
+<div class="panel-header">
+<span class="font-label-caps text-[10px] text-white">UNIT_DIRECTORY.LOG</span>
+</div>
+<div class="p-4 flex-1 overflow-y-auto space-y-4">
+<!-- Unit Category: Police -->
+<div class="space-y-2">
+<div class="flex items-center justify-between border-b border-outline-variant pb-1">
+<span class="font-bold text-xs uppercase text-on-surface-variant">Law Enforcement</span>
+<span class="text-[10px] font-code-data text-secondary">ACTIVE: 14</span>
+</div>
+<div class="space-y-1">
+<div class="flex items-center justify-between p-2 bg-surface-container-lowest industrial-border hover:border-primary/50 cursor-pointer">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-secondary text-lg">local_police</span>
+<div>
+<div class="font-bold text-xs">UNIT-309</div>
+<div class="text-[9px] text-on-surface-variant">PATROL_ZONE_A</div>
+</div>
+</div>
+<div class="flex items-center gap-1">
+<span class="status-led bg-green-500 rounded-full shadow-[0_0_5px_#22c55e]"></span>
+<span class="text-[10px] font-code-data">IDLE</span>
+</div>
+</div>
+<div class="flex items-center justify-between p-2 bg-primary-container text-on-primary-container industrial-border border-black">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-lg">local_police</span>
+<div>
+<div class="font-bold text-xs">UNIT-422</div>
+<div class="text-[9px] opacity-80">HOT_PURSUIT</div>
+</div>
+</div>
+<div class="flex items-center gap-1">
+<span class="status-led bg-red-600 rounded-full animate-blink shadow-[0_0_8px_#dc2626]"></span>
+<span class="text-[10px] font-code-data font-bold">RESP</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Unit Category: Medical -->
+<div class="space-y-2">
+<div class="flex items-center justify-between border-b border-outline-variant pb-1">
+<span class="font-bold text-xs uppercase text-on-surface-variant">Medical Units</span>
+<span class="text-[10px] font-code-data text-secondary">ACTIVE: 08</span>
+</div>
+<div class="space-y-1">
+<div class="flex items-center justify-between p-2 bg-surface-container-lowest industrial-border">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-secondary text-lg">medical_services</span>
+<div>
+<div class="font-bold text-xs">MED-82</div>
+<div class="text-[9px] text-on-surface-variant">EN_ROUTE_HOSP</div>
+</div>
+</div>
+<div class="flex items-center gap-1">
+<span class="status-led bg-blue-500 rounded-full shadow-[0_0_5px_#3b82f6]"></span>
+<span class="text-[10px] font-code-data">TRANS</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Unit Category: Fire -->
+<div class="space-y-2">
+<div class="flex items-center justify-between border-b border-outline-variant pb-1">
+<span class="font-bold text-xs uppercase text-on-surface-variant">Fire Response</span>
+<span class="text-[10px] font-code-data text-secondary">ACTIVE: 05</span>
+</div>
+<div class="space-y-1">
+<div class="flex items-center justify-between p-2 bg-surface-container-lowest industrial-border">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-secondary text-lg">fire_truck</span>
+<div>
+<div class="font-bold text-xs">FIRE-12</div>
+<div class="text-[9px] text-on-surface-variant">STATION_6_READY</div>
+</div>
+</div>
+<div class="flex items-center gap-1">
+<span class="status-led bg-green-500 rounded-full"></span>
+<span class="text-[10px] font-code-data">READY</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Tactical Map (Center Canvas) -->
+<div class="col-span-12 md:col-span-6 industrial-border relative bg-black overflow-hidden">
+<div class="panel-header absolute top-0 left-0 right-0 z-20">
+<span class="font-label-caps text-[10px] text-white">LIVE_CITY_GRID.MAP</span>
+<div class="ml-auto flex gap-4">
+<span class="text-[9px] text-secondary font-code-data">LAT: 45.523062</span>
+<span class="text-[9px] text-secondary font-code-data">LONG: -122.676482</span>
+</div>
+</div>
+<!-- Map Placeholder -->
+<div class="w-full h-full relative" data-location="Portland, Oregon" style="">
+<div class="absolute inset-0 grayscale contrast-125 opacity-40 mix-blend-screen" data-alt="A top-down tactical satellite map of a futuristic urban city grid at night. The view is stylized with high-contrast steel grays, dark shadows, and glowing vector overlays of streets and infrastructure. The aesthetic is industrial and technical, featuring data callouts, digital grid lines, and glowing dispatch markers in vibrant yellow and surgical blue. Professional, architectural, and precise." style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuCAuEwmEo1ubkPIZu8zj-6ARwQxv6C4pBeTOkV3DjJ9ozFbfAcjGS7VqmguUQcWBN11v7Pl9yir9kYK3nn_gNqULjnsdFtnhIs03XgH00UP_8LSXZX7XAcPiAiYrEcHAGjqeMlKnSaMCFp__H1juLZGhB8M7WEPQ5pCfqHYKlbCDuDzvfywgS_6wN5GZ4AIJPQ7w5SpDRxT3kdrgApiManxzyDnHclXDCkgs1L4Cf3GEu1xFCpIMsCw1sWDg8j3zKcWo-GQy5yJsiZa')"></div>
+<!-- Dispatch Markers -->
+<div class="absolute top-1/2 left-1/3 group cursor-pointer">
+<div class="relative">
+<div class="absolute -inset-4 bg-primary/20 rounded-full animate-ping"></div>
+<div class="bg-primary text-on-primary-container p-1 industrial-border border-black relative z-10">
+<span class="material-symbols-outlined text-sm block">warning</span>
+</div>
+<div class="absolute top-8 left-1/2 -translate-x-1/2 w-32 bg-surface-container-highest p-2 border border-primary shadow-xl hidden group-hover:block">
+<p class="text-[9px] font-bold text-primary mb-1 uppercase">Incident #9842</p>
+<p class="text-[8px] text-on-surface leading-tight">Code 3: Structural Fire Reported. Unit FIRE-09 dispatching.</p>
+</div>
+</div>
+</div>
+<div class="absolute bottom-1/4 right-1/4 group cursor-pointer">
+<div class="bg-secondary text-on-secondary p-1 industrial-border border-black">
+<span class="material-symbols-outlined text-sm block">local_police</span>
+</div>
+</div>
+<!-- HUD Overlays -->
+<div class="absolute bottom-4 left-4 p-3 bg-surface-dim/80 backdrop-blur-md industrial-border border-outline-variant w-40">
+<div class="text-[10px] font-bold uppercase mb-2 text-on-surface-variant">Scanning Sub-Grid</div>
+<div class="flex gap-1">
+<div class="h-1 flex-1 bg-primary"></div>
+<div class="h-1 flex-1 bg-primary"></div>
+<div class="h-1 flex-1 bg-primary/20"></div>
+<div class="h-1 flex-1 bg-primary/20"></div>
+</div>
+<div class="mt-2 font-code-data text-[9px] text-secondary">SECTOR_D7: CLEAR</div>
+</div>
+</div>
+</div>
+<!-- Incident Feed (Right Panel) -->
+<div class="col-span-12 md:col-span-3 industrial-border flex flex-col bg-surface-dim">
+<div class="panel-header">
+<span class="font-label-caps text-[10px] text-white">PRIORITY_ALERTS.FEED</span>
+</div>
+<div class="flex-1 overflow-y-auto">
+<!-- Urgent Alert -->
+<div class="p-4 border-b-border-heavy border-primary bg-primary/5">
+<div class="flex items-center gap-2 mb-2">
+<span class="material-symbols-outlined text-primary animate-pulse">priority_high</span>
+<span class="font-bold text-xs text-primary uppercase">Critical Warning</span>
+<span class="ml-auto text-[9px] font-code-data text-on-surface-variant">02M AGO</span>
+</div>
+<div class="text-xs font-bold mb-2">MULTIPLE VEHICLE COLLISION</div>
+<p class="text-[10px] text-on-surface-variant mb-4 leading-relaxed">
+                            District 4, Main Intersection. Automated sensors detect multiple impacts. Structural damage to utility pole 449.
+                        </p>
+<div class="flex gap-2">
+<button class="flex-1 py-1.5 bg-primary text-black text-[10px] font-bold uppercase hover:bg-white transition-colors">Dispatch All</button>
+<button class="px-3 py-1.5 border border-outline-variant text-[10px] font-bold uppercase text-on-surface">Details</button>
+</div>
+</div>
+<!-- Regular Alerts -->
+<div class="p-4 border-b border-outline-variant hover:bg-surface-container-high transition-colors cursor-pointer">
+<div class="flex items-center gap-2 mb-1">
+<span class="status-led bg-blue-500"></span>
+<span class="font-bold text-[10px] text-secondary uppercase">Information</span>
+<span class="ml-auto text-[9px] font-code-data text-on-surface-variant">14M AGO</span>
+</div>
+<div class="text-xs font-medium">Grid Sensor Offline</div>
+<p class="text-[10px] text-on-surface-variant mt-1">Sensor NOD-99 in Sector C-14 reporting no signal. Tech dispatched.</p>
+</div>
+<div class="p-4 border-b border-outline-variant hover:bg-surface-container-high transition-colors cursor-pointer">
+<div class="flex items-center gap-2 mb-1">
+<span class="status-led bg-green-500"></span>
+<span class="font-bold text-[10px] text-secondary uppercase">Update</span>
+<span class="ml-auto text-[9px] font-code-data text-on-surface-variant">29M AGO</span>
+</div>
+<div class="text-xs font-medium">Incident #8821 Closed</div>
+<p class="text-[10px] text-on-surface-variant mt-1">Medical emergency at Tech Plaza cleared. Unit MED-04 returning to base.</p>
+</div>
+</div>
+<!-- System Stats Footer -->
+<div class="p-4 bg-surface-container-lowest border-t border-outline-variant">
+<div class="grid grid-cols-2 gap-4">
+<div>
+<div class="text-[9px] text-on-surface-variant uppercase font-bold">Avg Response</div>
+<div class="text-xl font-headline-md text-primary">04:12</div>
+</div>
+<div>
+<div class="text-[9px] text-on-surface-variant uppercase font-bold">System Load</div>
+<div class="text-xl font-headline-md text-secondary">32%</div>
+</div>
+</div>
+<div class="mt-3 w-full h-1 bg-surface-container">
+<div class="h-full bg-primary" style="width: 32%"></div>
+</div>
+</div>
+</div>
+</section>
+<!-- Bottom Status Bar -->
+<footer class="h-8 bg-surface-container-lowest border-t border-primary/30 flex items-center px-4 justify-between font-code-data text-[9px] text-on-surface-variant">
+<div class="flex items-center gap-4">
+<span class="flex items-center gap-1"><span class="status-led bg-green-500 rounded-full"></span> CONNECTION_SECURE</span>
+<span class="opacity-40">|</span>
+<span>ENC_LEVEL: AES-512</span>
+</div>
+<div class="flex items-center gap-4">
+<span id="system-time">00:00:00 UTC</span>
+<span class="px-2 py-0.5 bg-secondary/10 border border-secondary/30 text-secondary">NODE_PRIMARY</span>
+</div>
+</footer>
+</main>
+<script>
+        // Micro-interaction: Live Clock
+        function updateTime() {
+            const now = new Date();
+            const timeStr = now.toISOString().split('T')[1].split('.')[0] + ' UTC';
+            document.getElementById('system-time').innerText = timeStr;
+        }
+        setInterval(updateTime, 1000);
+        updateTime();
+
+        // Simulate interactive dashboard
+        document.querySelectorAll('.industrial-border').forEach(panel => {
+            panel.addEventListener('mouseenter', () => {
+                panel.style.borderColor = '#ffc887'; // Primary highlight on hover
+            });
+            panel.addEventListener('mouseleave', () => {
+                panel.style.borderColor = '#353535'; // Reset
+            });
+        });
+    </script>
+</body></html>

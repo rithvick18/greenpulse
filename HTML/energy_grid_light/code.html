@@ -1,0 +1,369 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>GreenPulse OS | Energy Grid Monitoring</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@500&family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@100..900&family=JetBrains+Mono:wght@100..900&display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "secondary": "#525e7d",
+                        "primary": "#855300",
+                        "error": "#ba1a1a",
+                        "background": "#f9f9f9",
+                        "tertiary-container": "#b4b6ba",
+                        "on-surface": "#1a1c1c",
+                        "inverse-surface": "#2f3131",
+                        "on-secondary-fixed-variant": "#3a4664",
+                        "on-secondary": "#ffffff",
+                        "inverse-primary": "#ffb95f",
+                        "surface-container-lowest": "#ffffff",
+                        "tertiary-fixed": "#e0e2e6",
+                        "on-background": "#1a1c1c",
+                        "on-secondary-fixed": "#0d1b36",
+                        "on-surface-variant": "#534433",
+                        "surface-container-highest": "#e2e2e2",
+                        "surface-bright": "#f9f9f9",
+                        "on-tertiary-fixed-variant": "#44474a",
+                        "primary-fixed-dim": "#ffb95f",
+                        "primary-fixed": "#ffddb8",
+                        "on-tertiary": "#ffffff",
+                        "error-container": "#ffdad6",
+                        "on-tertiary-container": "#44484b",
+                        "secondary-container": "#cdd9fe",
+                        "on-primary": "#ffffff",
+                        "secondary-fixed": "#d9e2ff",
+                        "on-tertiary-fixed": "#191c1f",
+                        "on-primary-container": "#663f00",
+                        "on-primary-fixed": "#2a1700",
+                        "on-secondary-container": "#525f7e",
+                        "on-error": "#ffffff",
+                        "on-error-container": "#93000a",
+                        "surface": "#f9f9f9",
+                        "inverse-on-surface": "#f0f1f1",
+                        "on-primary-fixed-variant": "#653e00",
+                        "outline": "#867461",
+                        "surface-dim": "#dadada",
+                        "surface-tint": "#855300",
+                        "tertiary-fixed-dim": "#c4c7ca",
+                        "tertiary": "#5c5f62",
+                        "surface-container-low": "#f3f3f3",
+                        "primary-container": "#fca311",
+                        "secondary-fixed-dim": "#b9c6ea",
+                        "surface-variant": "#e2e2e2",
+                        "surface-container": "#eeeeee",
+                        "outline-variant": "#d9c3ad",
+                        "surface-container-high": "#e8e8e8"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.125rem",
+                        "lg": "0.25rem",
+                        "xl": "0.5rem",
+                        "full": "0.75rem"
+                    },
+                    "spacing": {
+                        "xl": "48px",
+                        "gutter": "20px",
+                        "base": "4px",
+                        "margin-desktop": "32px",
+                        "xs": "4px",
+                        "lg": "24px",
+                        "md": "16px",
+                        "sm": "8px",
+                        "margin-mobile": "16px"
+                    },
+                    "fontFamily": {
+                        "headline-lg": ["IBM Plex Sans"],
+                        "body-md": ["IBM Plex Sans"],
+                        "body-sm": ["IBM Plex Sans"],
+                        "headline-sm": ["IBM Plex Sans"],
+                        "body-lg": ["IBM Plex Sans"],
+                        "label-sm": ["JetBrains Mono"],
+                        "headline-md": ["IBM Plex Sans"],
+                        "label-md": ["JetBrains Mono"]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .zebra-stripe:nth-child(even) { background-color: #f3f4f6; }
+        .grid-bg {
+            background-image: radial-gradient(#d1d5db 1px, transparent 1px);
+            background-size: 20px 20px;
+        }
+    </style>
+</head>
+<body class="bg-background text-on-surface font-body-md overflow-hidden h-screen flex">
+<!-- SideNavBar -->
+<aside class="hidden md:flex h-screen w-64 flex-col bg-surface-container border-r border-outline-variant py-md px-sm">
+<div class="mb-xl px-sm">
+<h1 class="font-headline-sm text-headline-sm font-bold text-primary">GreenPulse OS</h1>
+<p class="font-label-sm text-label-sm text-secondary">City Command Center</p>
+</div>
+<nav class="flex-1 space-y-1">
+<a class="flex items-center gap-3 px-md py-sm hover:bg-surface-container-highest transition-all duration-100 text-on-surface-variant font-label-md text-label-md" href="#">
+<span class="material-symbols-outlined">dashboard</span> Overview
+            </a>
+<a class="flex items-center gap-3 px-md py-sm hover:bg-surface-container-highest transition-all duration-100 text-on-surface-variant font-label-md text-label-md" href="#">
+<span class="material-symbols-outlined">factory</span> Infrastructure
+            </a>
+<a class="flex items-center gap-3 px-md py-sm hover:bg-surface-container-highest transition-all duration-100 text-on-surface-variant font-label-md text-label-md" href="#">
+<span class="material-symbols-outlined">traffic</span> Traffic Control
+            </a>
+<a class="flex items-center gap-3 px-md py-sm bg-primary-container text-on-primary-container font-bold rounded-lg font-label-md text-label-md" href="#">
+<span class="material-symbols-outlined">electric_bolt</span> Energy Grid
+            </a>
+<a class="flex items-center gap-3 px-md py-sm hover:bg-surface-container-highest transition-all duration-100 text-on-surface-variant font-label-md text-label-md" href="#">
+<span class="material-symbols-outlined">security</span> Public Safety
+            </a>
+<a class="flex items-center gap-3 px-md py-sm hover:bg-surface-container-highest transition-all duration-100 text-on-surface-variant font-label-md text-label-md" href="#">
+<span class="material-symbols-outlined">health_and_safety</span> System Health
+            </a>
+</nav>
+<button class="mt-md w-full bg-primary text-on-primary py-sm rounded-lg font-bold hover:brightness-110 active:scale-95 duration-100">
+            DEPLOY NODE
+        </button>
+<div class="mt-xl border-t border-outline-variant pt-md space-y-1">
+<a class="flex items-center gap-3 px-md py-sm hover:bg-surface-container-highest text-on-surface-variant font-label-md text-label-md" href="#">
+<span class="material-symbols-outlined">help</span> Support
+            </a>
+<a class="flex items-center gap-3 px-md py-sm hover:bg-surface-container-highest text-on-surface-variant font-label-md text-label-md" href="#">
+<span class="material-symbols-outlined">history</span> Logs
+            </a>
+</div>
+</aside>
+<div class="flex-1 flex flex-col min-w-0">
+<!-- TopNavBar -->
+<header class="h-16 flex justify-between items-center px-lg w-full bg-surface border-b border-outline-variant">
+<div class="flex items-center gap-md">
+<span class="material-symbols-outlined md:hidden text-primary">bolt</span>
+<div class="relative hidden sm:block">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-secondary text-sm">search</span>
+<input class="pl-10 pr-4 py-1.5 bg-surface-container-low border-none rounded-lg text-body-sm focus:ring-2 focus:ring-primary-container w-64 transition-all" placeholder="Search systems..." type="text"/>
+</div>
+</div>
+<div class="flex items-center gap-md">
+<button class="material-symbols-outlined text-secondary hover:bg-surface-container-high p-2 rounded-full transition-colors">notifications</button>
+<button class="material-symbols-outlined text-secondary hover:bg-surface-container-high p-2 rounded-full transition-colors">settings</button>
+<div class="h-8 w-8 rounded-full overflow-hidden border border-outline-variant">
+<img class="object-cover w-full h-full" data-alt="A professional headshot of a city infrastructure administrator in a clean-cut corporate portrait. The lighting is bright and industrial-modern, with a neutral white background. The subject is wearing a high-quality dark navy professional blazer, symbolizing authority and precision in an enterprise software setting. The overall aesthetic is minimalist and high-clarity." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBgmtnhXOFnIDJIXuN6xAq_ruA93Z-lltAkff_hAvKX40crP7T3gpYdy0vA5StuMxmsQxOpd9z0BmeZ78zqWOK5Agl6fz_v4uGJJ0Pb9sxsoIlkcaBVtsC-tvYFXCSy9QqJVkdUmQxFaZdfK0HjhP0thwawJX0eALbsQ_oCC1zh-CxW9-MmwXBInsJkFRUEwXXuv5p_Hva9Tp--pKMuSRAkxft9xhoqMbJyD1_fZ6rIraCIuHeBk0wuKh98sdmuY0-DfO025aTd6d4f"/>
+</div>
+</div>
+</header>
+<!-- Main Content -->
+<main class="flex-1 overflow-y-auto p-gutter bg-background grid-bg">
+<div class="max-w-[1600px] mx-auto grid grid-cols-12 gap-gutter">
+<!-- Page Title Area -->
+<div class="col-span-12 flex justify-between items-end mb-sm">
+<div>
+<h2 class="font-headline-md text-headline-md font-bold text-on-surface">Energy Grid Monitoring</h2>
+<p class="text-secondary font-body-sm">Real-time balancing and infrastructure status for Central Sector 4-B.</p>
+</div>
+<div class="flex gap-sm">
+<span class="px-md py-1 bg-green-100 text-green-800 rounded font-label-md border border-green-200 flex items-center gap-1">
+<span class="material-symbols-outlined text-sm" style="font-variation-settings: 'FILL' 1;">circle</span> SYSTEM STABLE
+                        </span>
+<span class="px-md py-1 bg-surface-container-highest text-secondary rounded font-label-md border border-outline-variant">UTC 14:32:01</span>
+</div>
+</div>
+<!-- Bento Grid Content -->
+<!-- 1. Real-time Power Balance Chart -->
+<div class="col-span-12 lg:col-span-8 bg-white border border-outline-variant p-md relative overflow-hidden h-[400px]">
+<div class="flex justify-between items-start mb-md relative z-10">
+<div>
+<h3 class="font-label-md text-label-md uppercase tracking-wider text-secondary">Power Balance (GW)</h3>
+<div class="flex items-baseline gap-2">
+<span class="text-headline-lg font-bold text-on-surface">14.2</span>
+<span class="text-green-600 font-label-md">+0.3 Surplus</span>
+</div>
+</div>
+<div class="flex gap-4 font-label-sm">
+<div class="flex items-center gap-2"><span class="w-3 h-3 bg-primary rounded-full"></span> Generation</div>
+<div class="flex items-center gap-2"><span class="w-3 h-3 bg-secondary rounded-full"></span> Consumption</div>
+</div>
+</div>
+<div class="absolute bottom-0 left-0 right-0 h-64 px-md">
+<svg class="w-full h-full" viewbox="0 0 800 200">
+<path d="M0,150 Q50,140 100,160 T200,130 T300,150 T400,110 T500,140 T600,120 T700,150 T800,130" fill="none" stroke="#855300" stroke-linecap="round" stroke-width="3"></path>
+<path d="M0,160 Q50,170 100,155 T200,165 T300,160 T400,175 T500,160 T600,170 T700,155 T800,165" fill="none" stroke="#525e7d" stroke-dasharray="4,4" stroke-width="2"></path>
+<!-- Area fill generation -->
+<path d="M0,150 Q50,140 100,160 T200,130 T300,150 T400,110 T500,140 T600,120 T700,150 T800,130 V200 H0 Z" fill="#855300" fill-opacity="0.05"></path>
+</svg>
+</div>
+</div>
+<!-- 2. Grid Storage Battery Level -->
+<div class="col-span-12 lg:col-span-4 bg-white border border-outline-variant p-md flex flex-col justify-between">
+<div>
+<h3 class="font-label-md text-label-md uppercase tracking-wider text-secondary mb-md">Grid Storage Status</h3>
+<div class="flex justify-between items-center mb-sm">
+<span class="text-headline-lg font-bold text-on-surface">74.8%</span>
+<span class="material-symbols-outlined text-primary text-3xl">battery_horiz_075</span>
+</div>
+<div class="w-full bg-surface-container-highest h-4 rounded-full overflow-hidden mb-2">
+<div class="bg-primary h-full transition-all duration-1000" style="width: 74.8%"></div>
+</div>
+<div class="flex justify-between text-label-sm text-secondary">
+<span>Capacity: 4,500 MWh</span>
+<span>Discharging: 220 MW</span>
+</div>
+</div>
+<div class="mt-md pt-md border-t border-outline-variant">
+<div class="flex items-center justify-between mb-sm">
+<span class="font-label-md text-on-surface">Efficiency Rank</span>
+<span class="font-label-md text-primary font-bold">Tier A+</span>
+</div>
+<p class="text-body-sm text-secondary leading-tight">Optimized discharge cycle active. Next maintenance schedule: Oct 24.</p>
+</div>
+</div>
+<!-- 3. Infrastructure Node-Link (Interactive Placeholder) -->
+<div class="col-span-12 md:col-span-7 bg-white border border-outline-variant p-md h-[500px] flex flex-col">
+<div class="flex justify-between items-center mb-md">
+<h3 class="font-label-md text-label-md uppercase tracking-wider text-secondary">Active Substation Map</h3>
+<div class="flex gap-2">
+<button class="p-1 hover:bg-surface-container text-secondary rounded"><span class="material-symbols-outlined">zoom_in</span></button>
+<button class="p-1 hover:bg-surface-container text-secondary rounded"><span class="material-symbols-outlined">fullscreen</span></button>
+</div>
+</div>
+<div class="flex-1 relative bg-surface-container-lowest border border-outline-variant overflow-hidden group">
+<!-- Simulated Node Link Diagram -->
+<div class="absolute inset-0 flex items-center justify-center pointer-events-none">
+<svg class="w-full h-full opacity-20">
+<line stroke="#14213d" stroke-width="1" x1="20%" x2="50%" y1="30%" y2="50%"></line>
+<line stroke="#14213d" stroke-width="1" x1="80%" x2="50%" y1="20%" y2="50%"></line>
+<line stroke="#14213d" stroke-width="1" x1="40%" x2="50%" y1="80%" y2="50%"></line>
+<line stroke="#14213d" stroke-width="1" x1="70%" x2="50%" y1="70%" y2="50%"></line>
+</svg>
+</div>
+<!-- Active Nodes -->
+<div class="absolute top-[30%] left-[20%] w-4 h-4 bg-primary rounded-full ring-4 ring-primary-fixed cursor-pointer">
+<div class="absolute top-6 left-1/2 -translate-x-1/2 whitespace-nowrap bg-on-surface text-white text-[10px] px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity">NODE-41: STABLE</div>
+</div>
+<div class="absolute top-[50%] left-[50%] w-6 h-6 bg-primary rounded-full ring-8 ring-primary-fixed cursor-pointer flex items-center justify-center">
+<span class="material-symbols-outlined text-white text-xs">hub</span>
+</div>
+<div class="absolute top-[20%] left-[80%] w-4 h-4 bg-primary rounded-full ring-4 ring-primary-fixed cursor-pointer"></div>
+<div class="absolute top-[80%] left-[40%] w-4 h-4 bg-error rounded-full ring-4 ring-error-container cursor-pointer animate-pulse"></div>
+<div class="absolute top-[70%] left-[70%] w-4 h-4 bg-primary rounded-full ring-4 ring-primary-fixed cursor-pointer"></div>
+<!-- Legend -->
+<div class="absolute bottom-4 left-4 bg-white/80 backdrop-blur border border-outline-variant p-2 rounded shadow-sm text-label-sm">
+<div class="flex items-center gap-2 mb-1"><div class="w-2 h-2 bg-primary rounded-full"></div> Operational</div>
+<div class="flex items-center gap-2"><div class="w-2 h-2 bg-error rounded-full"></div> Maintenance</div>
+</div>
+</div>
+</div>
+<!-- 4. Renewable Contribution & Event Log -->
+<div class="col-span-12 md:col-span-5 flex flex-col gap-gutter">
+<!-- Contribution Progress Bars -->
+<div class="bg-white border border-outline-variant p-md">
+<h3 class="font-label-md text-label-md uppercase tracking-wider text-secondary mb-md">Renewable Mix</h3>
+<div class="space-y-md">
+<div>
+<div class="flex justify-between font-label-sm text-on-surface mb-1">
+<span>Solar Array B-1</span>
+<span>42%</span>
+</div>
+<div class="w-full bg-surface-container-high h-2 rounded-full overflow-hidden">
+<div class="bg-primary h-full" style="width: 42%"></div>
+</div>
+</div>
+<div>
+<div class="flex justify-between font-label-sm text-on-surface mb-1">
+<span>Thermal Geostat</span>
+<span>28%</span>
+</div>
+<div class="w-full bg-surface-container-high h-2 rounded-full overflow-hidden">
+<div class="bg-secondary h-full" style="width: 28%"></div>
+</div>
+</div>
+<div>
+<div class="flex justify-between font-label-sm text-on-surface mb-1">
+<span>Wind Turbine Cluster</span>
+<span>15%</span>
+</div>
+<div class="w-full bg-surface-container-high h-2 rounded-full overflow-hidden">
+<div class="bg-tertiary h-full" style="width: 15%"></div>
+</div>
+</div>
+</div>
+</div>
+<!-- Automated Event Log -->
+<div class="bg-on-secondary-fixed text-on-secondary-fixed-variant border border-outline p-0 flex-1 overflow-hidden flex flex-col">
+<div class="p-md bg-on-secondary-fixed border-b border-outline-variant flex justify-between items-center">
+<h3 class="font-label-md text-label-md uppercase tracking-wider text-white">System Logs</h3>
+<span class="text-xs text-on-secondary-fixed-variant font-label-sm">LIVE STREAM</span>
+</div>
+<div class="flex-1 overflow-y-auto p-0 font-label-sm">
+<div class="zebra-stripe px-md py-2 border-b border-outline/10 flex justify-between">
+<span class="text-primary-fixed">14:31:42</span>
+<span class="text-white/80">Automated cycle complete for Array B-1</span>
+<span class="text-green-400">INFO</span>
+</div>
+<div class="zebra-stripe px-md py-2 border-b border-outline/10 flex justify-between">
+<span class="text-primary-fixed">14:30:11</span>
+<span class="text-white/80">Voltage drop detected in Substation 9</span>
+<span class="text-amber-400">WARN</span>
+</div>
+<div class="zebra-stripe px-md py-2 border-b border-outline/10 flex justify-between">
+<span class="text-primary-fixed">14:28:55</span>
+<span class="text-white/80">Battery charge logic optimized (+1.2%)</span>
+<span class="text-green-400">INFO</span>
+</div>
+<div class="zebra-stripe px-md py-2 border-b border-outline/10 flex justify-between">
+<span class="text-primary-fixed">14:25:01</span>
+<span class="text-white/80">User Admin-04 initiated manual override</span>
+<span class="text-blue-400">AUTH</span>
+</div>
+<div class="zebra-stripe px-md py-2 border-b border-outline/10 flex justify-between">
+<span class="text-primary-fixed">14:20:12</span>
+<span class="text-white/80">Thermal sensor calibration successful</span>
+<span class="text-green-400">INFO</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+</main>
+</div>
+<!-- Floating Action Button (FAB) - Suppression Logic Applied: Only on Home/Dashboards -->
+<button class="fixed bottom-lg right-lg bg-primary-container text-on-primary-container p-4 rounded-full shadow-lg hover:shadow-xl hover:scale-105 active:scale-95 transition-all flex items-center justify-center z-50">
+<span class="material-symbols-outlined text-3xl">bolt</span>
+</button>
+<script>
+        // Micro-interactions for the dashboard
+        document.addEventListener('DOMContentLoaded', () => {
+            // Simple log streamer effect
+            const logContainer = document.querySelector('.overflow-y-auto.p-0');
+            setInterval(() => {
+                const logs = [
+                    { time: new Date().toLocaleTimeString(), msg: "Syncing node data...", type: "INFO", color: "text-green-400" },
+                    { time: new Date().toLocaleTimeString(), msg: "Grid frequency check: 60.02Hz", type: "INFO", color: "text-green-400" },
+                    { time: new Date().toLocaleTimeString(), msg: "Load balancing in progress", type: "INFO", color: "text-green-400" }
+                ];
+                const log = logs[Math.floor(Math.random() * logs.length)];
+                
+                const logEl = document.createElement('div');
+                logEl.className = 'zebra-stripe px-md py-2 border-b border-outline/10 flex justify-between opacity-0 transition-opacity duration-500';
+                logEl.innerHTML = `
+                    <span class="text-primary-fixed">${log.time.split(' ')[0]}</span>
+                    <span class="text-white/80">${log.msg}</span>
+                    <span class="${log.color}">${log.type}</span>
+                `;
+                
+                logContainer.prepend(logEl);
+                setTimeout(() => logEl.classList.remove('opacity-0'), 10);
+                if (logContainer.children.length > 20) logContainer.lastElementChild.remove();
+            }, 8000);
+        });
+    </script>
+</body></html>

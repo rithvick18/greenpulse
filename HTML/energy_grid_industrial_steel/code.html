@@ -1,0 +1,452 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>GreenPulse OS | Energy Grid Monitoring</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&amp;family=Playfair+Display:wght@700;900&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .grid-bg {
+            background-image: linear-gradient(to right, rgba(161, 142, 121, 0.05) 1px, transparent 1px),
+                              linear-gradient(to bottom, rgba(161, 142, 121, 0.05) 1px, transparent 1px);
+            background-size: 32px 32px;
+        }
+        .segmented-progress div {
+            height: 100%;
+            border-right: 2px solid #131313;
+        }
+        .led-pulse {
+            animation: pulse 1.5s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+        }
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.3; }
+        }
+        .scanline {
+            width: 100%;
+            height: 2px;
+            background: rgba(255, 200, 135, 0.1);
+            position: absolute;
+            top: 0;
+            animation: scan 4s linear infinite;
+        }
+        @keyframes scan {
+            from { top: 0; }
+            to { top: 100%; }
+        }
+    </style>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "error-container": "#93000a",
+                    "primary-fixed-dim": "#ffb95f",
+                    "surface-dim": "#131313",
+                    "primary-container": "#fca311",
+                    "primary": "#ffc887",
+                    "on-primary-fixed-variant": "#653e00",
+                    "on-error-container": "#ffdad6",
+                    "surface-tint": "#ffb95f",
+                    "surface-container-lowest": "#0e0e0e",
+                    "outline": "#a18e79",
+                    "surface-variant": "#353535",
+                    "background": "#131313",
+                    "tertiary": "#d1d2d2",
+                    "on-secondary-fixed-variant": "#41484e",
+                    "on-surface-variant": "#d9c3ad",
+                    "tertiary-fixed-dim": "#c6c6c6",
+                    "surface": "#131313",
+                    "on-tertiary-fixed-variant": "#454747",
+                    "surface-bright": "#393939",
+                    "inverse-primary": "#855300",
+                    "outline-variant": "#534433",
+                    "on-secondary-container": "#b2b9c1",
+                    "on-error": "#690005",
+                    "inverse-surface": "#e2e2e2",
+                    "on-surface": "#e2e2e2",
+                    "surface-container-high": "#2a2a2a",
+                    "on-primary-fixed": "#2a1700",
+                    "on-tertiary-fixed": "#1a1c1c",
+                    "secondary-container": "#434a51",
+                    "on-tertiary": "#2f3131",
+                    "tertiary-container": "#b6b6b6",
+                    "tertiary-fixed": "#e2e2e2",
+                    "secondary": "#c0c7cf",
+                    "on-primary": "#472a00",
+                    "on-background": "#e2e2e2",
+                    "surface-container-highest": "#353535",
+                    "secondary-fixed-dim": "#c0c7cf",
+                    "secondary-fixed": "#dce3ec",
+                    "on-tertiary-container": "#464848",
+                    "on-secondary": "#2a3138",
+                    "inverse-on-surface": "#303030",
+                    "on-secondary-fixed": "#151c22",
+                    "on-primary-container": "#663f00",
+                    "primary-fixed": "#ffddb8",
+                    "surface-container-low": "#1b1b1b",
+                    "error": "#ffb4ab",
+                    "surface-container": "#1f1f1f"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.25rem",
+                    "lg": "0.5rem",
+                    "xl": "0.75rem",
+                    "full": "9999px"
+            },
+            "spacing": {
+                    "margin-mobile": "16px",
+                    "gutter": "16px",
+                    "border-heavy": "4px",
+                    "unit": "4px",
+                    "margin-desktop": "32px",
+                    "border-thick": "2px"
+            },
+            "fontFamily": {
+                    "label-caps": ["JetBrains Mono"],
+                    "headline-md": ["Playfair Display"],
+                    "headline-lg-mobile": ["Playfair Display"],
+                    "body-md": ["JetBrains Mono"],
+                    "headline-lg": ["Playfair Display"],
+                    "code-data": ["JetBrains Mono"],
+                    "body-lg": ["JetBrains Mono"]
+            },
+            "fontSize": {
+                    "label-caps": ["12px", {"lineHeight": "1", "letterSpacing": "0.1em", "fontWeight": "700"}],
+                    "headline-md": ["24px", {"lineHeight": "1.3", "fontWeight": "700"}],
+                    "headline-lg-mobile": ["32px", {"lineHeight": "1.2", "fontWeight": "900"}],
+                    "body-md": ["14px", {"lineHeight": "1.5", "fontWeight": "400"}],
+                    "headline-lg": ["48px", {"lineHeight": "1.1", "letterSpacing": "-0.02em", "fontWeight": "900"}],
+                    "code-data": ["14px", {"lineHeight": "1.2", "fontWeight": "500"}],
+                    "body-lg": ["18px", {"lineHeight": "1.6", "fontWeight": "400"}]
+            }
+          },
+        },
+      }
+    </script>
+</head>
+<body class="bg-background text-on-surface font-body-md selection:bg-primary selection:text-black grid-bg overflow-hidden flex h-screen">
+<!-- SIDE NAV BAR (FROM JSON) -->
+<aside class="hidden md:flex flex-col h-full py-gutter px-4 w-64 border-r border-primary/30 bg-surface-container-low/40 backdrop-blur-xl shadow-[0_0_20px_rgba(255,177,195,0.1)] z-50">
+<div class="mb-8">
+<h1 class="font-headline-md text-headline-md font-bold tracking-tighter text-primary">GreenPulse OS</h1>
+<p class="font-label-sm text-[10px] uppercase tracking-widest text-on-surface-variant opacity-70">City Management v2.4</p>
+</div>
+<nav class="flex-1 space-y-2">
+<a class="flex items-center gap-3 px-3 py-2 text-on-surface-variant font-medium hover:bg-secondary-container/20 hover:text-secondary transition-all duration-150" href="#">
+<span class="material-symbols-outlined" data-icon="dashboard">dashboard</span>
+<span class="font-label-caps text-label-caps">Overview</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2 text-on-surface-variant font-medium hover:bg-secondary-container/20 hover:text-secondary transition-all duration-150" href="#">
+<span class="material-symbols-outlined" data-icon="architecture">architecture</span>
+<span class="font-label-caps text-label-caps">Infrastructure</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2 text-on-surface-variant font-medium hover:bg-secondary-container/20 hover:text-secondary transition-all duration-150" href="#">
+<span class="material-symbols-outlined" data-icon="traffic">traffic</span>
+<span class="font-label-caps text-label-caps">Traffic Control</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2 text-primary font-bold border-r-2 border-primary bg-primary/10" href="#">
+<span class="material-symbols-outlined" data-icon="bolt">bolt</span>
+<span class="font-label-caps text-label-caps">Energy Grid</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2 text-on-surface-variant font-medium hover:bg-secondary-container/20 hover:text-secondary transition-all duration-150" href="#">
+<span class="material-symbols-outlined" data-icon="security">security</span>
+<span class="font-label-caps text-label-caps">Public Safety</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2 text-on-surface-variant font-medium hover:bg-secondary-container/20 hover:text-secondary transition-all duration-150" href="#">
+<span class="material-symbols-outlined" data-icon="health_and_safety">health_and_safety</span>
+<span class="font-label-caps text-label-caps">System Health</span>
+</a>
+</nav>
+<div class="mt-auto space-y-4 pt-6 border-t border-outline-variant/30">
+<button class="w-full py-3 bg-primary text-black font-bold font-label-caps text-label-caps tracking-tighter border-2 border-black hover:bg-white transition-colors active:scale-95 duration-150">
+                EMERGENCY OVERRIDE
+            </button>
+<div class="flex flex-col gap-2">
+<a class="flex items-center gap-3 px-3 py-1 text-on-surface-variant hover:text-primary transition-colors" href="#">
+<span class="material-symbols-outlined text-[18px]" data-icon="settings">settings</span>
+<span class="text-[12px] font-label-caps">Settings</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-1 text-on-surface-variant hover:text-primary transition-colors" href="#">
+<span class="material-symbols-outlined text-[18px]" data-icon="help_center">help_center</span>
+<span class="text-[12px] font-label-caps">Support</span>
+</a>
+</div>
+</div>
+</aside>
+<main class="flex-1 flex flex-col h-full overflow-hidden">
+<!-- TOP APP BAR (FROM JSON) -->
+<header class="flex justify-between items-center w-full px-gutter h-16 bg-surface-container-low/40 backdrop-blur-xl border-b border-primary/30 shadow-[0_0_15px_rgba(0,219,233,0.1)] z-40">
+<div class="flex items-center gap-4">
+<span class="font-headline-md text-headline-md font-bold text-primary md:hidden">GP</span>
+<div class="h-6 w-[2px] bg-outline-variant/50 hidden md:block"></div>
+<div class="flex items-center gap-2">
+<span class="led-pulse w-2 h-2 bg-primary rounded-full"></span>
+<span class="font-label-caps text-[10px] tracking-widest text-primary">GRID STATUS: OPTIMAL</span>
+</div>
+</div>
+<div class="flex-1 max-w-xl mx-8 hidden lg:block">
+<div class="relative group">
+<span class="absolute left-3 top-1/2 -translate-y-1/2 material-symbols-outlined text-outline" data-icon="search">search</span>
+<input class="w-full bg-black border-2 border-outline-variant text-primary font-code-data text-xs px-10 py-2 focus:border-primary focus:ring-0 transition-all" placeholder="QUERY GRID NODE..." type="text"/>
+</div>
+</div>
+<div class="flex items-center gap-6">
+<div class="flex gap-4">
+<button class="text-on-surface-variant hover:text-tertiary transition-colors">
+<span class="material-symbols-outlined" data-icon="notifications_active">notifications_active</span>
+</button>
+<button class="text-on-surface-variant hover:text-tertiary transition-colors">
+<span class="material-symbols-outlined" data-icon="settings_input_component">settings_input_component</span>
+</button>
+<button class="text-on-surface-variant hover:text-tertiary transition-colors">
+<span class="material-symbols-outlined" data-icon="terminal">terminal</span>
+</button>
+</div>
+<div class="flex items-center gap-3 pl-6 border-l border-outline-variant/30">
+<div class="text-right hidden sm:block">
+<p class="text-[10px] font-label-caps leading-none text-tertiary">OPERATOR ALPHA-7</p>
+<p class="text-[9px] font-code-data text-on-surface-variant">LEVEL 4 CLEARANCE</p>
+</div>
+<div class="w-10 h-10 border-2 border-primary bg-surface-container-high overflow-hidden">
+<img class="w-full h-full object-cover" data-alt="A cinematic, high-contrast headshot of a futuristic city grid operator wearing a technical headset and dark industrial utility gear. The lighting is dominated by amber and steel blue hues from surrounding monitors, reflecting on the operator's serious expression. The aesthetic is gritty yet precise, emphasizing a professional high-stakes environment in a dark-mode industrial setting." src="https://lh3.googleusercontent.com/aida-public/AB6AXuA7aXqJ9tl3Jhm9200BiDHcmt9sHTpFpf7tYewLY_h9B7ZYprHlB_Dphfqlj0BywQ6mc8xXGUO1QtLwgErEUGlma2nJBQo01BD0UsHzVbcO_uD32lspYQTtD_AiuzAcCDv6Vp1Ayluyz7cAdzaxrndAJTsEYydvL30SV3eBnRa0Jm2RB7_KO6sjMlCfiiXKEHM_E9GM0-gfDJI9IGrjQ8DBoMEoWQK6TdqK-o7YdX0nlmFooUF5HsurxGywURImOUcgJFs2mBWCJ95q"/>
+</div>
+</div>
+</div>
+</header>
+<!-- CONTENT AREA -->
+<div class="flex-1 overflow-y-auto p-gutter space-y-6">
+<!-- BENTO GRID LAYOUT -->
+<div class="grid grid-cols-12 gap-6">
+<!-- PRIMARY MONITOR: CONSUMPTION VS GENERATION -->
+<div class="col-span-12 lg:col-span-8 border-2 border-outline-variant bg-surface-container-lowest relative overflow-hidden">
+<div class="bg-outline-variant h-8 flex items-center px-4 justify-between">
+<span class="font-label-caps text-label-caps text-black">POWER_BALANCE_REALTIME_MONITOR [MW]</span>
+<div class="flex gap-2">
+<span class="w-3 h-3 border border-black/20"></span>
+<span class="w-3 h-3 border border-black/20"></span>
+</div>
+</div>
+<div class="p-6 h-[400px] relative">
+<div class="scanline"></div>
+<!-- SVG Chart Placeholder -->
+<div class="w-full h-full flex flex-col justify-end gap-2 border-l border-b border-outline/30 relative">
+<!-- Generation Line (Higher) -->
+<svg class="absolute inset-0 w-full h-full" preserveaspectratio="none">
+<path d="M0 280 Q 50 250, 100 270 T 200 220 T 300 240 T 400 180 T 500 200 T 600 150 T 700 170 T 800 120" fill="none" stroke="#ffc887" stroke-dasharray="8 4" stroke-width="3"></path>
+<!-- Consumption Line (Lower) -->
+<path d="M0 320 Q 50 310, 100 330 T 200 290 T 300 310 T 400 260 T 500 280 T 600 230 T 700 250 T 800 200" fill="none" stroke="#c0c7cf" stroke-width="2"></path>
+</svg>
+<div class="absolute top-4 right-4 flex flex-col gap-2 font-code-data text-[10px]">
+<div class="flex items-center gap-2">
+<span class="w-8 h-[2px] bg-primary"></span>
+<span>NET_GENERATION: 842.4 MW</span>
+</div>
+<div class="flex items-center gap-2">
+<span class="w-8 h-[2px] bg-secondary"></span>
+<span>TOTAL_CONSUMPTION: 712.1 MW</span>
+</div>
+</div>
+<!-- Grid Markers -->
+<div class="absolute bottom-0 left-0 w-full flex justify-between px-2 font-code-data text-[10px] text-outline opacity-50">
+<span>00:00</span><span>04:00</span><span>08:00</span><span>12:00</span><span>16:00</span><span>20:00</span>
+</div>
+</div>
+</div>
+</div>
+<!-- SIDE PANEL: GRID STATUS NODES -->
+<div class="col-span-12 lg:col-span-4 border-2 border-outline-variant bg-surface-container-lowest">
+<div class="bg-outline-variant h-8 flex items-center px-4">
+<span class="font-label-caps text-label-caps text-black">ACTIVE_SUBSTATIONS_NODES</span>
+</div>
+<div class="p-4 space-y-4">
+<!-- Map Container -->
+<div class="h-64 bg-black border border-outline-variant/30 relative overflow-hidden group">
+<div class="absolute inset-0 opacity-20 pointer-events-none">
+<div class="absolute top-0 left-0 w-full h-full bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-primary/10 via-transparent to-transparent"></div>
+</div>
+<div class="absolute inset-0 p-4">
+<!-- Node Connections Visual -->
+<svg class="w-full h-full opacity-40">
+<line stroke="#ffc887" stroke-width="1" x1="20%" x2="50%" y1="30%" y2="50%"></line>
+<line stroke="#ffc887" stroke-width="1" x1="80%" x2="50%" y1="20%" y2="50%"></line>
+<line stroke="#ffc887" stroke-width="1" x1="40%" x2="50%" y1="80%" y2="50%"></line>
+</svg>
+<!-- Map Nodes -->
+<div class="absolute top-[30%] left-[20%] group/node cursor-pointer">
+<div class="w-3 h-3 bg-primary led-pulse border border-black shadow-[0_0_8px_rgba(255,200,135,0.5)]"></div>
+<div class="hidden group-hover/node:block absolute top-full mt-2 bg-surface-container-high border border-primary p-2 z-10 w-32">
+<p class="text-[9px] font-label-caps text-primary">S_STATION_NORTH</p>
+<p class="text-[8px] font-code-data text-white">LOAD: 82%</p>
+</div>
+</div>
+<div class="absolute top-[50%] left-[50%]">
+<div class="w-4 h-4 bg-primary border-2 border-black rotate-45"></div>
+<span class="absolute -top-4 -left-4 text-[8px] font-code-data">CORE_HUB</span>
+</div>
+<div class="absolute top-[20%] left-[80%]">
+<div class="w-3 h-3 bg-primary border border-black"></div>
+</div>
+<div class="absolute top-[80%] left-[40%]">
+<div class="w-3 h-3 bg-error led-pulse border border-black"></div>
+</div>
+</div>
+<div class="absolute bottom-2 left-2 flex items-center gap-2">
+<span class="text-[8px] font-code-data text-primary uppercase">Geo-Lock: Sector 7G</span>
+</div>
+</div>
+<!-- Substation List -->
+<div class="space-y-2 max-h-48 overflow-y-auto">
+<div class="flex items-center justify-between p-2 border border-outline-variant/20 bg-surface-container-low">
+<div class="flex items-center gap-3">
+<span class="w-2 h-2 bg-primary"></span>
+<span class="font-code-data text-[11px]">SUB_DIST_01 (WEST)</span>
+</div>
+<span class="text-[10px] font-label-caps text-primary">STABLE</span>
+</div>
+<div class="flex items-center justify-between p-2 border border-outline-variant/20 bg-surface-container-low">
+<div class="flex items-center gap-3">
+<span class="w-2 h-2 bg-primary"></span>
+<span class="font-code-data text-[11px]">SUB_DIST_04 (NORTH)</span>
+</div>
+<span class="text-[10px] font-label-caps text-primary">STABLE</span>
+</div>
+<div class="flex items-center justify-between p-2 border border-error/50 bg-error-container/10">
+<div class="flex items-center gap-3">
+<span class="w-2 h-2 bg-error led-pulse"></span>
+<span class="font-code-data text-[11px]">SUB_DIST_09 (SOUTH)</span>
+</div>
+<span class="text-[10px] font-label-caps text-error">VOLTAGE_DROP</span>
+</div>
+</div>
+</div>
+</div>
+<!-- SECONDARY DATA PANEL: ENERGY MIX -->
+<div class="col-span-12 lg:col-span-4 border-2 border-outline-variant bg-surface-container-lowest">
+<div class="bg-outline-variant h-8 flex items-center px-4">
+<span class="font-label-caps text-label-caps text-black">RENEWABLE_CONTRIBUTION</span>
+</div>
+<div class="p-6 space-y-6">
+<div class="space-y-2">
+<div class="flex justify-between font-label-caps text-[10px]">
+<span>SOLAR_ARRAY_01</span>
+<span class="text-primary">42%</span>
+</div>
+<div class="h-4 bg-surface-container-high border border-outline-variant flex segmented-progress">
+<div class="bg-primary w-[42%]"></div>
+</div>
+</div>
+<div class="space-y-2">
+<div class="flex justify-between font-label-caps text-[10px]">
+<span>THERMAL_PLANT_B</span>
+<span class="text-primary">31%</span>
+</div>
+<div class="h-4 bg-surface-container-high border border-outline-variant flex segmented-progress">
+<div class="bg-primary w-[31%]"></div>
+</div>
+</div>
+<div class="space-y-2">
+<div class="flex justify-between font-label-caps text-[10px]">
+<span>WIND_FARM_DELTA</span>
+<span class="text-primary">18%</span>
+</div>
+<div class="h-4 bg-surface-container-high border border-outline-variant flex segmented-progress">
+<div class="bg-primary w-[18%]"></div>
+</div>
+</div>
+<div class="pt-4 border-t border-outline-variant/30">
+<div class="flex items-center gap-4">
+<div class="flex-1">
+<p class="text-[9px] font-label-caps text-on-surface-variant mb-1">TOTAL_RENEWABLE</p>
+<p class="text-2xl font-headline-md text-primary leading-tight">91%</p>
+</div>
+<div class="w-16 h-16 border-2 border-primary/20 flex items-center justify-center">
+<span class="material-symbols-outlined text-primary text-3xl" data-icon="eco">eco</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- SECONDARY DATA PANEL: BATTERY STORAGE -->
+<div class="col-span-12 lg:col-span-4 border-2 border-outline-variant bg-surface-container-lowest">
+<div class="bg-outline-variant h-8 flex items-center px-4">
+<span class="font-label-caps text-label-caps text-black">GRID_STORAGE_BATTERIES</span>
+</div>
+<div class="p-6">
+<div class="flex items-center justify-center py-4">
+<!-- Large Circular Gauge Mockup -->
+<div class="relative w-40 h-40 border-border-heavy border-outline-variant rounded-full flex items-center justify-center">
+<div class="absolute inset-0 rounded-full border-border-heavy border-primary border-t-transparent border-l-transparent rotate-45"></div>
+<div class="text-center">
+<p class="text-3xl font-headline-md text-primary">74.8%</p>
+<p class="text-[9px] font-label-caps text-on-surface-variant">CHARGE_LEVEL</p>
+</div>
+</div>
+</div>
+<div class="grid grid-cols-2 gap-4 mt-4">
+<div class="p-2 border border-outline-variant/30 bg-black">
+<p class="text-[8px] font-code-data text-on-surface-variant">CAPACITY</p>
+<p class="text-[12px] font-label-caps text-primary">12.5 GWh</p>
+</div>
+<div class="p-2 border border-outline-variant/30 bg-black">
+<p class="text-[8px] font-code-data text-on-surface-variant">DISCHARGE_RATE</p>
+<p class="text-[12px] font-label-caps text-primary">2.4 MW/s</p>
+</div>
+</div>
+</div>
+</div>
+<!-- TERTIARY: SYSTEM LOGS -->
+<div class="col-span-12 lg:col-span-4 border-2 border-outline-variant bg-surface-container-lowest">
+<div class="bg-outline-variant h-8 flex items-center px-4">
+<span class="font-label-caps text-label-caps text-black">AUTOMATED_EVENT_LOG</span>
+</div>
+<div class="p-4 font-code-data text-[10px] space-y-1 h-[240px] overflow-y-auto">
+<p class="text-primary-fixed-dim">[14:22:04] SYS: LOAD_BALANCING initiated in SECTOR_7G</p>
+<p class="text-on-surface-variant">[14:22:01] NET: Renewable flow increased +4%</p>
+<p class="text-on-surface-variant">[14:21:45] STR: Battery array 04 switched to DISCHARGE_MODE</p>
+<p class="text-error">[14:20:12] ERR: VOLTAGE_DROP detected @ SUB_DIST_09</p>
+<p class="text-on-surface-variant">[14:19:55] SYS: Diagnostic run complete. No critical failure.</p>
+<p class="text-on-surface-variant">[14:18:30] USER: Operator Alpha-7 logged in.</p>
+<p class="text-on-surface-variant opacity-50">[14:15:00] SYS: Scheduled health check initiated...</p>
+<p class="text-on-surface-variant opacity-50">[14:10:22] NET: Solar peak reached for ARRAY_01</p>
+</div>
+</div>
+</div>
+</div>
+<!-- FOOTER BAR / STATUS INFO -->
+<footer class="h-10 border-t border-outline-variant/30 bg-surface-container px-gutter flex items-center justify-between text-[10px] font-code-data text-on-surface-variant">
+<div class="flex gap-6">
+<span>LOCAL_TIME: 14:22:15</span>
+<span class="text-primary">LATENCY: 14ms</span>
+<span>Uptime: 142d 12h 44m</span>
+</div>
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-[14px]" data-icon="vpn_lock">vpn_lock</span>
+<span>SECURE_CONNECTION_ESTABLISHED</span>
+</div>
+</footer>
+</main>
+<!-- FLOATING ACTIONS SUPPRESSED PER DESIGN RULES FOR MONITORING/DETAILS SCREENS -->
+<script>
+        // Simple micro-interaction for the log feed
+        const logContainer = document.querySelector('.overflow-y-auto.h-\\[240px\\]');
+        setInterval(() => {
+            if (Math.random() > 0.7) {
+                const p = document.createElement('p');
+                p.className = 'text-on-surface-variant transition-opacity duration-500 opacity-0';
+                const now = new Date();
+                const timeStr = `[${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}:${now.getSeconds().toString().padStart(2, '0')}]`;
+                p.innerText = `${timeStr} SYS: Periodic node heartbeat detected.`;
+                logContainer.insertBefore(p, logContainer.firstChild);
+                setTimeout(() => p.classList.remove('opacity-0'), 100);
+            }
+        }, 5000);
+    </script>
+</body></html>
