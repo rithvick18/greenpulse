@@ -92,14 +92,27 @@ def upgrade() -> None:
     )
     op.create_index(op.f("ix_alerts_id"), "alerts", ["id"], unique=False)
 
-    # 6. TimescaleDB Extension & Hypertable (PostgreSQL Dialect only)
+    # 6. TimescaleDB Extension & Hypertable (PostgreSQL Dialect only, optional)
+    # Check if timescaledb is available before attempting to create it.
+    # Trying to CREATE EXTENSION inside a transaction when it's not installed
+    # will abort the transaction and prevent Alembic from recording the version.
     bind = op.get_bind()
     if bind.dialect.name == "postgresql":
-        try:
-            op.execute("CREATE EXTENSION IF NOT EXISTS timescaledb CASCADE;")
-            op.execute("SELECT create_hypertable('telemetry', 'time', if_not_exists => TRUE);")
-        except Exception as e:
-            print(f"Notice: TimescaleDB extension/hypertable statement skipped or failed: {e}")
+        result = bind.execute(
+            sa.text(
+                "SELECT COUNT(*) FROM pg_available_extensions WHERE name = 'timescaledb'"
+            )
+        )
+        timescaledb_available = result.scalar() > 0
+        if timescaledb_available:
+            try:
+                op.execute(sa.text("CREATE EXTENSION IF NOT EXISTS timescaledb CASCADE"))
+                op.execute(sa.text("SELECT create_hypertable('telemetry', 'time', if_not_exists => TRUE)"))
+                print("Notice: TimescaleDB hypertable created successfully.")
+            except Exception as e:
+                print(f"Notice: TimescaleDB hypertable creation failed: {e}")
+        else:
+            print("Notice: TimescaleDB extension not available on this PostgreSQL instance — skipping hypertable creation. Telemetry will work as a regular table.")
 
 
 def downgrade() -> None:
