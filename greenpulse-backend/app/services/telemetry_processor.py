@@ -30,11 +30,18 @@ class TelemetryProcessor:
         try:
             db.add(telemetry_record)
             await db.commit()
+        except Exception as db_err:
+            logger.error("telemetry_db_insert_error", error=str(db_err), node_id=telemetry_data.node_id)
+            await db.rollback()
 
-            # Evaluate alert conditions
+        # Evaluate alert conditions
+        try:
             await AlertEngine.evaluate_telemetry(db, telemetry_data)
+        except Exception as alert_err:
+            logger.warning("telemetry_alert_eval_warning", error=str(alert_err))
 
-            # Broadcast update via Redis Pub/Sub
+        # Broadcast update via Redis Pub/Sub
+        try:
             payload = {
                 "event": "telemetry_update",
                 "data": {
@@ -45,7 +52,6 @@ class TelemetryProcessor:
                 },
             }
             await RedisManager.publish(channel="telemetry:broadcast", message=payload)
+        except Exception as redis_err:
+            logger.debug("telemetry_redis_publish_bypass", error=str(redis_err))
 
-        except Exception as e:
-            logger.error("telemetry_processor_error", error=str(e), node_id=telemetry_data.node_id)
-            await db.rollback()
