@@ -49,6 +49,6 @@ describe('Sidebar Navigation', () => {
 
     expect(screen.getByText('CORE LATENCY')).toBeInTheDocument();
     expect(screen.getByText('SENSOR MESH')).toBeInTheDocument();
-    expect(screen.getByText('14,820 NODES')).toBeInTheDocument();
+    expect(screen.getByText('0 NODES')).toBeInTheDocument();
   });
 });

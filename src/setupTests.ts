@@ -55,7 +55,7 @@ export class MockWebSocket {
 }
 
 // Override global WebSocket
-(global as any).WebSocket = MockWebSocket;
+(globalThis as any).WebSocket = MockWebSocket;
 
 // Mock localStorage
 const localStorageMock = (() => {
@@ -94,7 +94,7 @@ Object.defineProperty(window, 'matchMedia', {
 });
 
 // Mock ResizeObserver
-(global as any).ResizeObserver = vi.fn().mockImplementation(() => ({
+(globalThis as any).ResizeObserver = vi.fn().mockImplementation(() => ({
   observe: vi.fn(),
   unobserve: vi.fn(),
   disconnect: vi.fn(),

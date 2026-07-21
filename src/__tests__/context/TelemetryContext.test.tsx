@@ -60,8 +60,10 @@ describe('TelemetryContext', () => {
 
     expect(screen.getByTestId('active-tab')).toHaveTextContent('overview');
     expect(screen.getByTestId('theme-mode')).toHaveTextContent('dark');
+    expect(screen.getByTestId('city-health')).toHaveTextContent('0');
     expect(screen.getByTestId('line-status')).toHaveTextContent('RUNNING');
     expect(screen.getByTestId('emergency-override')).toHaveTextContent('INACTIVE');
+    expect(screen.getByTestId('alerts-count')).toHaveTextContent('0');
   });
 
   it('allows changing active tab, theme, line status, and emergency override', () => {
@@ -125,7 +127,26 @@ describe('TelemetryContext', () => {
       </TelemetryProvider>
     );
 
-    expect(screen.getByTestId('alerts-count')).toHaveTextContent('2');
+    const ws = MockWebSocket.instances[0];
+    act(() => {
+      ws.triggerMessage({
+        event: 'snapshot',
+        data: {
+          activeAlerts: [
+            {
+              id: 'ALT-1092',
+              timestamp: '10:24:12',
+              level: 'CRITICAL',
+              sector: 'SECTOR-04 (GRID)',
+              message: 'Substation #09 load variance exceeding nominal parameters (+14%)',
+              status: 'ACTIVE'
+            }
+          ]
+        },
+      });
+    });
+
+    expect(screen.getByTestId('alerts-count')).toHaveTextContent('1');
 
     act(() => {
       screen.getByText('Acknowledge Alert').click();

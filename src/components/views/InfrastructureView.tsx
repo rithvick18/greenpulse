@@ -50,30 +50,36 @@ export const InfrastructureView: React.FC = () => {
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            {structuralNodes.map((node) => (
-              <div key={node.id} className="p-4 bg-surface-container-low border border-outline-variant space-y-2 hover:border-primary transition-all">
-                <div className="flex items-center justify-between">
-                  <span className="font-bold text-xs text-on-surface">{node.name}</span>
-                  <span className={`px-2 py-0.5 text-[9px] font-bold border ${
-                    node.status === 'ELEVATED_STRESS' ? 'bg-amber-950 border-amber-500 text-amber-400' : 'bg-emerald-950 border-emerald-500 text-emerald-400'
-                  }`}>
-                    {node.status}
-                  </span>
-                </div>
-
-                <div className="flex items-center justify-between text-xs text-outline">
-                  <span>VIBRATION: <strong className="text-primary">{node.vibrationHz} Hz</strong></span>
-                  <span>STRESS LOAD: <strong className="text-on-surface">{node.stressLoad}%</strong></span>
-                </div>
-
-                <div className="w-full bg-surface-container-highest h-2 border border-outline-variant/40 overflow-hidden">
-                  <div 
-                    className={`h-full ${node.stressLoad > 75 ? 'bg-amber-400' : 'bg-emerald-400'}`}
-                    style={{ width: `${node.stressLoad}%` }}
-                  />
-                </div>
+            {structuralNodes.length === 0 ? (
+              <div className="col-span-full text-center py-8 text-xs text-outline font-mono">
+                Awaiting structural stress and vibration sensor data...
               </div>
-            ))}
+            ) : (
+              structuralNodes.map((node) => (
+                <div key={node.id} className="p-4 bg-surface-container-low border border-outline-variant space-y-2 hover:border-primary transition-all">
+                  <div className="flex items-center justify-between">
+                    <span className="font-bold text-xs text-on-surface">{node.name}</span>
+                    <span className={`px-2 py-0.5 text-[9px] font-bold border ${
+                      node.status === 'ELEVATED_STRESS' ? 'bg-amber-950 border-amber-500 text-amber-400' : 'bg-emerald-950 border-emerald-500 text-emerald-400'
+                    }`}>
+                      {node.status}
+                    </span>
+                  </div>
+
+                  <div className="flex items-center justify-between text-xs text-outline">
+                    <span>VIBRATION: <strong className="text-primary">{node.vibrationHz} Hz</strong></span>
+                    <span>STRESS LOAD: <strong className="text-on-surface">{node.stressLoad}%</strong></span>
+                  </div>
+
+                  <div className="w-full bg-surface-container-highest h-2 border border-outline-variant/40 overflow-hidden">
+                    <div 
+                      className={`h-full ${node.stressLoad > 75 ? 'bg-amber-400' : 'bg-emerald-400'}`}
+                      style={{ width: `${node.stressLoad}%` }}
+                    />
+                  </div>
+                </div>
+              ))
+            )}
           </div>
         </div>
 
@@ -87,21 +93,27 @@ export const InfrastructureView: React.FC = () => {
           </div>
 
           <div className="space-y-3">
-            {maintenanceQueue.map((item) => (
-              <div key={item.id} className="p-3 bg-surface-container-low border border-outline-variant/60 space-y-1.5">
-                <div className="flex items-center justify-between text-xs">
-                  <span className="font-bold text-primary">{item.id}</span>
-                  <span className={`px-1.5 py-0.5 text-[9px] font-bold border ${
-                    item.priority === 'HIGH' ? 'bg-red-950 border-red-500 text-red-400' : 'bg-amber-950 border-amber-500 text-amber-400'
-                  }`}>
-                    {item.priority} PRIORITY
-                  </span>
-                </div>
-                <div className="text-xs font-bold text-on-surface">{item.asset}</div>
-                <div className="text-[11px] text-outline">{item.issue}</div>
-                <div className="text-[10px] text-emerald-400 font-bold pt-1">ASSIGNED: {item.assignedTech}</div>
+            {maintenanceQueue.length === 0 ? (
+              <div className="text-center py-6 text-xs text-outline font-mono">
+                Maintenance dispatch queue clear.
               </div>
-            ))}
+            ) : (
+              maintenanceQueue.map((item) => (
+                <div key={item.id} className="p-3 bg-surface-container-low border border-outline-variant/60 space-y-1.5">
+                  <div className="flex items-center justify-between text-xs">
+                    <span className="font-bold text-primary">{item.id}</span>
+                    <span className={`px-1.5 py-0.5 text-[9px] font-bold border ${
+                      item.priority === 'HIGH' ? 'bg-red-950 border-red-500 text-red-400' : 'bg-amber-950 border-amber-500 text-amber-400'
+                    }`}>
+                      {item.priority} PRIORITY
+                    </span>
+                  </div>
+                  <div className="text-xs font-bold text-on-surface">{item.asset}</div>
+                  <div className="text-[11px] text-outline">{item.issue}</div>
+                  <div className="text-[10px] text-emerald-400 font-bold pt-1">ASSIGNED: {item.assignedTech}</div>
+                </div>
+              ))
+            )}
           </div>
         </div>
       </div>

@@ -124,33 +124,39 @@ export const OverviewDashboard: React.FC = () => {
 
           {/* Energy Breakdown Progress bars */}
           <div className="space-y-3 pt-2">
-            {energySources.map((source) => {
-              const pct = ((source.outputMW / source.capacityMW) * 100).toFixed(1);
-              return (
-                <div key={source.name} className="space-y-1">
-                  <div className="flex items-center justify-between text-xs font-mono">
-                    <span className="text-on-surface font-semibold flex items-center space-x-2">
-                      <span className={`w-2 h-2 rounded-full ${source.status === 'ONLINE' ? 'bg-emerald-400 status-led' : 'bg-amber-400'}`} />
-                      <span>{source.name}</span>
-                    </span>
-                    <span className="text-outline">
-                      <strong className="text-primary">{source.outputMW} MW</strong> / {source.capacityMW} MW ({pct}%)
-                    </span>
+            {energySources.length === 0 ? (
+              <div className="text-center py-6 text-xs text-outline font-mono">
+                Awaiting real-time grid generation breakdown...
+              </div>
+            ) : (
+              energySources.map((source) => {
+                const pct = source.capacityMW > 0 ? ((source.outputMW / source.capacityMW) * 100).toFixed(1) : '0.0';
+                return (
+                  <div key={source.name} className="space-y-1">
+                    <div className="flex items-center justify-between text-xs font-mono">
+                      <span className="text-on-surface font-semibold flex items-center space-x-2">
+                        <span className={`w-2 h-2 rounded-full ${source.status === 'ONLINE' ? 'bg-emerald-400 status-led' : 'bg-amber-400'}`} />
+                        <span>{source.name}</span>
+                      </span>
+                      <span className="text-outline">
+                        <strong className="text-primary">{source.outputMW} MW</strong> / {source.capacityMW} MW ({pct}%)
+                      </span>
+                    </div>
+                    <div className="w-full bg-surface-container-highest h-2 border border-outline-variant/40 overflow-hidden">
+                      <div 
+                        className={`h-full transition-all duration-500 ${
+                          source.type === 'solar' ? 'bg-amber-400' :
+                          source.type === 'wind' ? 'bg-sky-400' :
+                          source.type === 'hydro' ? 'bg-blue-500' :
+                          source.type === 'battery' ? 'bg-emerald-400' : 'bg-orange-500'
+                        }`}
+                        style={{ width: `${pct}%` }}
+                      />
+                    </div>
                   </div>
-                  <div className="w-full bg-surface-container-highest h-2 border border-outline-variant/40 overflow-hidden">
-                    <div 
-                      className={`h-full transition-all duration-500 ${
-                        source.type === 'solar' ? 'bg-amber-400' :
-                        source.type === 'wind' ? 'bg-sky-400' :
-                        source.type === 'hydro' ? 'bg-blue-500' :
-                        source.type === 'battery' ? 'bg-emerald-400' : 'bg-orange-500'
-                      }`}
-                      style={{ width: `${pct}%` }}
-                    />
-                  </div>
-                </div>
-              );
-            })}
+                );
+              })
+            )}
           </div>
 
           {/* Graphical Waveform representation */}
@@ -266,40 +272,48 @@ export const OverviewDashboard: React.FC = () => {
               </tr>
             </thead>
             <tbody className="divide-y divide-outline-variant/40">
-              {activeAlerts.map((alert) => (
-                <tr key={alert.id} className="hover:bg-surface-container-high transition-colors">
-                  <td className="p-3 font-bold text-primary">{alert.id}</td>
-                  <td className="p-3 text-outline text-[11px]">{alert.timestamp}</td>
-                  <td className="p-3">
-                    <span className={`px-2 py-0.5 text-[10px] font-extrabold uppercase border ${
-                      alert.level === 'CRITICAL' ? 'bg-red-950/80 border-red-500 text-red-400' :
-                      alert.level === 'WARNING' ? 'bg-amber-950/80 border-amber-500 text-amber-400' :
-                      'bg-sky-950/80 border-sky-500 text-sky-400'
-                    }`}>
-                      {alert.level}
-                    </span>
-                  </td>
-                  <td className="p-3 text-on-surface font-semibold">{alert.sector}</td>
-                  <td className="p-3 text-on-surface-variant max-w-md truncate">{alert.message}</td>
-                  <td className="p-3">
-                    <span className={`text-[10px] font-bold ${alert.status === 'ACTIVE' ? 'text-amber-400 status-led' : 'text-emerald-400'}`}>
-                      {alert.status}
-                    </span>
-                  </td>
-                  <td className="p-3 text-right">
-                    {alert.status === 'ACTIVE' ? (
-                      <button
-                        onClick={() => acknowledgeAlert(alert.id)}
-                        className="px-2.5 py-1 text-[10px] bg-surface-container border border-outline-variant hover:border-primary text-on-surface font-bold hover:text-primary transition-colors"
-                      >
-                        ACKNOWLEDGE
-                      </button>
-                    ) : (
-                      <span className="text-[10px] text-emerald-400 font-bold">CLEARED</span>
-                    )}
+              {activeAlerts.length === 0 ? (
+                <tr>
+                  <td colSpan={7} className="p-6 text-center text-outline text-xs font-mono">
+                    No active alerts recorded. All telemetry nominal.
                   </td>
                 </tr>
-              ))}
+              ) : (
+                activeAlerts.map((alert) => (
+                  <tr key={alert.id} className="hover:bg-surface-container-high transition-colors">
+                    <td className="p-3 font-bold text-primary">{alert.id}</td>
+                    <td className="p-3 text-outline text-[11px]">{alert.timestamp}</td>
+                    <td className="p-3">
+                      <span className={`px-2 py-0.5 text-[10px] font-extrabold uppercase border ${
+                        alert.level === 'CRITICAL' ? 'bg-red-950/80 border-red-500 text-red-400' :
+                        alert.level === 'WARNING' ? 'bg-amber-950/80 border-amber-500 text-amber-400' :
+                        'bg-sky-950/80 border-sky-500 text-sky-400'
+                      }`}>
+                        {alert.level}
+                      </span>
+                    </td>
+                    <td className="p-3 text-on-surface font-semibold">{alert.sector}</td>
+                    <td className="p-3 text-on-surface-variant max-w-md truncate">{alert.message}</td>
+                    <td className="p-3">
+                      <span className={`text-[10px] font-bold ${alert.status === 'ACTIVE' ? 'text-amber-400 status-led' : 'text-emerald-400'}`}>
+                        {alert.status}
+                      </span>
+                    </td>
+                    <td className="p-3 text-right">
+                      {alert.status === 'ACTIVE' ? (
+                        <button
+                          onClick={() => acknowledgeAlert(alert.id)}
+                          className="px-2.5 py-1 text-[10px] bg-surface-container border border-outline-variant hover:border-primary text-on-surface font-bold hover:text-primary transition-colors"
+                        >
+                          ACKNOWLEDGE
+                        </button>
+                      ) : (
+                        <span className="text-[10px] text-emerald-400 font-bold">CLEARED</span>
+                      )}
+                    </td>
+                  </tr>
+                ))
+              )}
             </tbody>
           </table>
         </div>

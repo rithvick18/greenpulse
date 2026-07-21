@@ -53,31 +53,37 @@ export const IndustrialPrecisionView: React.FC = () => {
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            {roboticCells.map((cell) => (
-              <div key={cell.id} className="p-4 bg-surface-container-low border border-outline-variant space-y-2 hover:border-primary transition-all">
-                <div className="flex items-center justify-between">
-                  <span className="font-bold text-xs text-primary">{cell.id}</span>
-                  <span className={`px-2 py-0.5 text-[9px] font-bold border ${
-                    cell.status === 'ELEVATED_TEMP' ? 'bg-amber-950 border-amber-500 text-amber-400' : 'bg-emerald-950 border-emerald-500 text-emerald-400'
-                  }`}>
-                    {cell.status}
-                  </span>
-                </div>
-                <div className="text-xs font-bold text-on-surface">{cell.location}</div>
-
-                <div className="flex items-center justify-between text-xs text-outline pt-1">
-                  <span>TEMP: <strong className="text-amber-400">{cell.thermalC} °C</strong></span>
-                  <span>YIELD: <strong className="text-emerald-400">{cell.yieldPct}%</strong></span>
-                </div>
-
-                <div className="w-full bg-surface-container-highest h-2 border border-outline-variant/40 overflow-hidden">
-                  <div 
-                    className={`h-full ${cell.thermalC > 60 ? 'bg-amber-400' : 'bg-emerald-400'}`}
-                    style={{ width: `${(cell.thermalC / cell.maxC) * 100}%` }}
-                  />
-                </div>
+            {roboticCells.length === 0 ? (
+              <div className="col-span-full text-center py-8 text-xs text-outline font-mono">
+                Awaiting robotic cell thermal and yield telemetry...
               </div>
-            ))}
+            ) : (
+              roboticCells.map((cell) => (
+                <div key={cell.id} className="p-4 bg-surface-container-low border border-outline-variant space-y-2 hover:border-primary transition-all">
+                  <div className="flex items-center justify-between">
+                    <span className="font-bold text-xs text-primary">{cell.id}</span>
+                    <span className={`px-2 py-0.5 text-[9px] font-bold border ${
+                      cell.status === 'ELEVATED_TEMP' ? 'bg-amber-950 border-amber-500 text-amber-400' : 'bg-emerald-950 border-emerald-500 text-emerald-400'
+                    }`}>
+                      {cell.status}
+                    </span>
+                  </div>
+                  <div className="text-xs font-bold text-on-surface">{cell.location}</div>
+
+                  <div className="flex items-center justify-between text-xs text-outline pt-1">
+                    <span>TEMP: <strong className="text-amber-400">{cell.thermalC} °C</strong></span>
+                    <span>YIELD: <strong className="text-emerald-400">{cell.yieldPct}%</strong></span>
+                  </div>
+
+                  <div className="w-full bg-surface-container-highest h-2 border border-outline-variant/40 overflow-hidden">
+                    <div 
+                      className={`h-full ${cell.thermalC > 60 ? 'bg-amber-400' : 'bg-emerald-400'}`}
+                      style={{ width: `${(cell.thermalC / cell.maxC) * 100}%` }}
+                    />
+                  </div>
+                </div>
+              ))
+            )}
           </div>
         </div>
 

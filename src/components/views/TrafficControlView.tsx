@@ -1,5 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useTelemetry } from '../../context/TelemetryContext';
+import { TrafficMap } from './TrafficMap';
 import { 
   Car, 
   Video, 
@@ -18,7 +19,13 @@ import {
 export const TrafficControlView: React.FC = () => {
   const { intersections, trafficCongestionPercent, trafficCameras, avVectorsActive } = useTelemetry();
   const [signalMode, setSignalMode] = useState<'AI_ADAPTIVE' | 'MANUAL' | 'EMERGENCY_CORRIDOR'>('AI_ADAPTIVE');
-  const [cameraActive, setCameraActive] = useState<string>('CAM-01');
+  const [cameraActive, setCameraActive] = useState<string>('');
+
+  useEffect(() => {
+    if (!cameraActive && trafficCameras.length > 0) {
+      setCameraActive(trafficCameras[0].id);
+    }
+  }, [trafficCameras, cameraActive]);
 
   return (
     <div className="p-6 space-y-6 font-mono grid-bg">
@@ -72,6 +79,15 @@ export const TrafficControlView: React.FC = () => {
         </div>
       </div>
 
+      {/* Real-time Interactive Traffic Vector Map Section */}
+      <TrafficMap 
+        intersections={intersections}
+        trafficCameras={trafficCameras}
+        activeCameraId={cameraActive}
+        onSelectCamera={(id) => setCameraActive(id)}
+        signalMode={signalMode}
+      />
+
       {/* Main Grid Section */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Live Camera Optics Feed Simulation */}
@@ -94,12 +110,12 @@ export const TrafficControlView: React.FC = () => {
             {/* Top HUD Overlay */}
             <div className="flex items-center justify-between text-xs text-emerald-400 font-mono z-10 bg-black/60 px-3 py-1.5 border border-emerald-500/30">
               <div className="flex items-center space-x-3">
-                <span className="font-bold">{cameraActive}</span>
+                <span className="font-bold">{cameraActive || 'NO-CAM'}</span>
                 <span className="text-slate-400">|</span>
-                <span>{trafficCameras.find(c => c.id === cameraActive)?.location || 'Sector Optical Feed'}</span>
+                <span>{trafficCameras.find(c => c.id === cameraActive)?.location || 'Awaiting optical telemetry feed'}</span>
               </div>
               <div className="flex items-center space-x-4">
-                <span>FPS: {trafficCameras.find(c => c.id === cameraActive)?.fps || 60}.0</span>
+                <span>FPS: {trafficCameras.find(c => c.id === cameraActive)?.fps || 0}.0</span>
                 <span>RES: 4K HDR</span>
                 <span className="text-red-500 font-bold animate-pulse">● REC</span>
               </div>
@@ -159,32 +175,38 @@ export const TrafficControlView: React.FC = () => {
           </div>
 
           <div className="space-y-3">
-            {intersections.map((int) => (
-              <div key={int.id} className="p-3 bg-surface-container-low border border-outline-variant/60 space-y-2">
-                <div className="flex items-center justify-between text-xs">
-                  <span className="font-bold text-on-surface">{int.name}</span>
-                  <span className={`px-1.5 py-0.5 text-[9px] font-bold border ${
-                    int.signalStatus === 'OPTIMIZED' ? 'bg-emerald-950 border-emerald-500 text-emerald-400' :
-                    int.signalStatus === 'CONGESTED' ? 'bg-red-950 border-red-500 text-red-400' :
-                    'bg-amber-950 border-amber-500 text-amber-400'
-                  }`}>
-                    {int.signalStatus}
-                  </span>
-                </div>
-
-                <div className="flex items-center justify-between text-[11px] text-outline">
-                  <span>THROUGHPUT: <strong className="text-primary">{int.throughput} V/min</strong></span>
-                  <span>AV SHARE: <strong className="text-emerald-400">{int.avDensity}%</strong></span>
-                </div>
-
-                <div className="w-full bg-surface-container-highest h-1.5 overflow-hidden">
-                  <div 
-                    className={`h-full ${int.congestion > 75 ? 'bg-red-500' : int.congestion > 40 ? 'bg-amber-400' : 'bg-emerald-400'}`}
-                    style={{ width: `${int.congestion}%` }}
-                  />
-                </div>
+            {intersections.length === 0 ? (
+              <div className="text-center py-6 text-xs text-outline font-mono">
+                Awaiting intersection telemetry data...
               </div>
-            ))}
+            ) : (
+              intersections.map((int) => (
+                <div key={int.id} className="p-3 bg-surface-container-low border border-outline-variant/60 space-y-2">
+                  <div className="flex items-center justify-between text-xs">
+                    <span className="font-bold text-on-surface">{int.name}</span>
+                    <span className={`px-1.5 py-0.5 text-[9px] font-bold border ${
+                      int.signalStatus === 'OPTIMIZED' ? 'bg-emerald-950 border-emerald-500 text-emerald-400' :
+                      int.signalStatus === 'CONGESTED' ? 'bg-red-950 border-red-500 text-red-400' :
+                      'bg-amber-950 border-amber-500 text-amber-400'
+                    }`}>
+                      {int.signalStatus}
+                    </span>
+                  </div>
+
+                  <div className="flex items-center justify-between text-[11px] text-outline">
+                    <span>THROUGHPUT: <strong className="text-primary">{int.throughput} V/min</strong></span>
+                    <span>AV SHARE: <strong className="text-emerald-400">{int.avDensity}%</strong></span>
+                  </div>
+
+                  <div className="w-full bg-surface-container-highest h-1.5 overflow-hidden">
+                    <div 
+                      className={`h-full ${int.congestion > 75 ? 'bg-red-500' : int.congestion > 40 ? 'bg-amber-400' : 'bg-emerald-400'}`}
+                      style={{ width: `${int.congestion}%` }}
+                    />
+                  </div>
+                </div>
+              ))
+            )}
           </div>
 
           {/* Quick Command Box */}

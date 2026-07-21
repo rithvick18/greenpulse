@@ -77,7 +77,7 @@ export const Header: React.FC = () => {
       <div className="flex items-center space-x-4">
         <div className="hidden sm:block text-right font-mono text-xs text-on-surface-variant">
           <div className="text-[10px] text-outline font-semibold tracking-widest uppercase">SYSTEM TIME</div>
-          <div className="text-primary font-medium text-xs">{timeStr || '09:01:18 UTC'}</div>
+          <div className="text-primary font-medium text-xs">{timeStr || '--:--:-- UTC'}</div>
         </div>
 
         {/* Notifications pill */}

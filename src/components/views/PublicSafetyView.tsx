@@ -74,40 +74,46 @@ export const PublicSafetyView: React.FC = () => {
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            {safetyUnits.map((unit) => (
-              <div key={unit.callsign} className="p-4 bg-surface-container-low border border-outline-variant space-y-3 hover:border-primary transition-all">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center space-x-2">
-                    {unit.type === 'POLICE' ? <Car className="w-4 h-4 text-sky-400" /> :
-                     unit.type === 'MEDICAL' ? <Ambulance className="w-4 h-4 text-red-400" /> :
-                     unit.type === 'FIRE' ? <Flame className="w-4 h-4 text-amber-400" /> :
-                     <Radio className="w-4 h-4 text-emerald-400" />}
-                    <span className="font-bold text-sm text-on-surface">{unit.callsign}</span>
-                  </div>
-                  <span className={`px-2 py-0.5 text-[9px] font-bold border ${
-                    unit.status === 'DISPATCHED' ? 'bg-red-950 border-red-500 text-red-400 animate-pulse' :
-                    unit.status === 'EN_ROUTE' ? 'bg-amber-950 border-amber-500 text-amber-400' :
-                    'bg-emerald-950 border-emerald-500 text-emerald-400'
-                  }`}>
-                    {unit.status}
-                  </span>
-                </div>
-
-                <div className="text-xs text-outline space-y-1">
-                  <div>SECTOR: <strong className="text-on-surface">{unit.sector}</strong></div>
-                  {unit.etaMinutes && (
-                    <div>ETA: <strong className="text-primary">{unit.etaMinutes} MINS TO SCENE</strong></div>
-                  )}
-                </div>
-
-                <button
-                  onClick={() => triggerDispatch(unit.callsign)}
-                  className="w-full py-1.5 bg-surface border border-outline-variant hover:border-red-500 text-on-surface hover:text-red-400 font-mono text-xs font-bold transition-colors uppercase"
-                >
-                  DISPATCH CORRIDOR PRIORITY
-                </button>
+            {safetyUnits.length === 0 ? (
+              <div className="col-span-full text-center py-8 text-xs text-outline font-mono">
+                Awaiting emergency unit GPS telemetry...
               </div>
-            ))}
+            ) : (
+              safetyUnits.map((unit) => (
+                <div key={unit.callsign} className="p-4 bg-surface-container-low border border-outline-variant space-y-3 hover:border-primary transition-all">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center space-x-2">
+                      {unit.type === 'POLICE' ? <Car className="w-4 h-4 text-sky-400" /> :
+                       unit.type === 'MEDICAL' ? <Ambulance className="w-4 h-4 text-red-400" /> :
+                       unit.type === 'FIRE' ? <Flame className="w-4 h-4 text-amber-400" /> :
+                       <Radio className="w-4 h-4 text-emerald-400" />}
+                      <span className="font-bold text-sm text-on-surface">{unit.callsign}</span>
+                    </div>
+                    <span className={`px-2 py-0.5 text-[9px] font-bold border ${
+                      unit.status === 'DISPATCHED' ? 'bg-red-950 border-red-500 text-red-400 animate-pulse' :
+                      unit.status === 'EN_ROUTE' ? 'bg-amber-950 border-amber-500 text-amber-400' :
+                      'bg-emerald-950 border-emerald-500 text-emerald-400'
+                    }`}>
+                      {unit.status}
+                    </span>
+                  </div>
+
+                  <div className="text-xs text-outline space-y-1">
+                    <div>SECTOR: <strong className="text-on-surface">{unit.sector}</strong></div>
+                    {unit.etaMinutes && (
+                      <div>ETA: <strong className="text-primary">{unit.etaMinutes} MINS TO SCENE</strong></div>
+                    )}
+                  </div>
+
+                  <button
+                    onClick={() => triggerDispatch(unit.callsign)}
+                    className="w-full py-1.5 bg-surface border border-outline-variant hover:border-red-500 text-on-surface hover:text-red-400 font-mono text-xs font-bold transition-colors uppercase"
+                  >
+                    DISPATCH CORRIDOR PRIORITY
+                  </button>
+                </div>
+              ))
+            )}
           </div>
         </div>
 
@@ -120,27 +126,33 @@ export const PublicSafetyView: React.FC = () => {
             <p className="text-[11px] text-outline">Real-time emergency dispatch queue</p>
           </div>
 
-          {activeIncidents.map((inc) => (
-            <div 
-              key={inc.id} 
-              className={`p-4 bg-surface-container-low border space-y-2 ${
-                inc.priority === 1 ? 'border-red-500/40' : 'border-outline-variant'
-              }`}
-            >
-              <div className={`flex items-center justify-between text-xs font-bold ${
-                inc.priority === 1 ? 'text-red-400' : 'text-amber-400'
-              }`}>
-                <span>INCIDENT #{inc.id}</span>
-                <span className={inc.priority === 1 ? 'animate-pulse font-bold' : ''}>
-                  PRIORITY {inc.priority}
-                </span>
-              </div>
-              <div className="text-xs font-bold text-on-surface">{inc.title}</div>
-              <p className="text-[11px] text-outline">
-                {inc.description}
-              </p>
+          {activeIncidents.length === 0 ? (
+            <div className="text-center py-6 text-xs text-outline font-mono">
+              No active emergency protocols or incidents reported.
             </div>
-          ))}
+          ) : (
+            activeIncidents.map((inc) => (
+              <div 
+                key={inc.id} 
+                className={`p-4 bg-surface-container-low border space-y-2 ${
+                  inc.priority === 1 ? 'border-red-500/40' : 'border-outline-variant'
+                }`}
+              >
+                <div className={`flex items-center justify-between text-xs font-bold ${
+                  inc.priority === 1 ? 'text-red-400' : 'text-amber-400'
+                }`}>
+                  <span>INCIDENT #{inc.id}</span>
+                  <span className={inc.priority === 1 ? 'animate-pulse font-bold' : ''}>
+                    PRIORITY {inc.priority}
+                  </span>
+                </div>
+                <div className="text-xs font-bold text-on-surface">{inc.title}</div>
+                <p className="text-[11px] text-outline">
+                  {inc.description}
+                </p>
+              </div>
+            ))
+          )}
         </div>
       </div>
     </div>

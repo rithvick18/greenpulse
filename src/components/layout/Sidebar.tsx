@@ -24,7 +24,7 @@ interface NavItem {
 }
 
 export const Sidebar: React.FC = () => {
-  const { activeTab, setActiveTab, activeAlerts, emergencyOverrideActive } = useTelemetry();
+  const { activeTab, setActiveTab, activeAlerts, emergencyOverrideActive, totalSensors } = useTelemetry();
 
   const criticalAlertCount = activeAlerts.filter(a => a.level === 'CRITICAL' && a.status === 'ACTIVE').length;
 
@@ -144,7 +144,7 @@ export const Sidebar: React.FC = () => {
               <Database className="w-3.5 h-3.5 text-amber-400" />
               <span>SENSOR MESH</span>
             </span>
-            <span className="text-on-surface font-bold">14,820 NODES</span>
+            <span className="text-on-surface font-bold">{totalSensors > 0 ? `${totalSensors.toLocaleString()} NODES` : '0 NODES'}</span>
           </div>
 
           <div className="flex items-center justify-between p-2 text-xs font-mono text-on-surface-variant bg-surface border border-outline-variant/40">
