@@ -17,6 +17,9 @@ const TestComponent: React.FC = () => {
     toggleLineStatus,
     emergencyOverrideActive,
     toggleEmergencyOverride,
+    connectionStatus,
+    connectionError,
+    reconnect,
   } = useTelemetry();
 
   return (
@@ -27,11 +30,14 @@ const TestComponent: React.FC = () => {
       <span data-testid="line-status">{lineStatus}</span>
       <span data-testid="emergency-override">{emergencyOverrideActive ? 'ACTIVE' : 'INACTIVE'}</span>
       <span data-testid="alerts-count">{activeAlerts.length}</span>
+      <span data-testid="connection-status">{connectionStatus}</span>
+      <span data-testid="connection-error">{connectionError || ''}</span>
 
       <button onClick={() => setActiveTab('traffic')}>Switch Tab</button>
       <button onClick={toggleTheme}>Toggle Theme</button>
       <button onClick={toggleLineStatus}>Toggle Line</button>
       <button onClick={toggleEmergencyOverride}>Toggle Emergency</button>
+      <button onClick={reconnect}>Reconnect</button>
       {activeAlerts[0] && (
         <button onClick={() => acknowledgeAlert(activeAlerts[0].id)}>Acknowledge Alert</button>
       )}
@@ -126,5 +132,21 @@ describe('TelemetryContext', () => {
     });
 
     // Alert status is updated to RESOLVED
+  });
+
+  it('sets connectionStatus to error when WebSocket encounters an error', () => {
+    render(
+      <TelemetryProvider>
+        <TestComponent />
+      </TelemetryProvider>
+    );
+
+    const ws = MockWebSocket.instances[0];
+    act(() => {
+      ws.triggerError(new Error('Connection refused'));
+    });
+
+    expect(screen.getByTestId('connection-status')).toHaveTextContent('error');
+    expect(screen.getByTestId('connection-error')).toHaveTextContent('Unable to establish connection');
   });
 });

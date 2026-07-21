@@ -33,15 +33,15 @@ jobs:
           cd greenpulse-backend
           python -m pip install --upgrade pip
           pip install -r requirements-dev.txt
-          pip install aiosqlite python-multipart
 
       - name: Run Pytest Backend Test Suite & Coverage
         env:
           DATABASE_URL: "sqlite+aiosqlite:///:memory:"
-          REDIS_URL: "redis://localhost:6379/0"
-          SECRET_KEY: "test_secret_key_for_unit_and_integration_testing_greenpulse_32b"
+          SECRET_KEY: "testsecret"
           DEBUG: "True"
           ENVIRONMENT: "testing"
+          REDIS_URL: "redis://localhost:6379/0"
+          MQTT_BROKER_HOST: "localhost"
           PYTHONPATH: "."
         run: |
           cd greenpulse-backend

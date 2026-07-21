@@ -10,16 +10,19 @@ export class MockWebSocket {
   onerror: ((event: Event) => void) | null = null;
   onclose: ((event: CloseEvent) => void) | null = null;
   sentMessages: string[] = [];
+  private openTimeout: any = null;
 
   static instances: MockWebSocket[] = [];
 
   constructor(url: string) {
     this.url = url;
     MockWebSocket.instances.push(this);
-    setTimeout(() => {
-      this.readyState = 1; // OPEN
-      if (this.onopen) {
-        this.onopen(new Event('open'));
+    this.openTimeout = setTimeout(() => {
+      if (this.readyState === 0) {
+        this.readyState = 1; // OPEN
+        if (this.onopen) {
+          this.onopen(new Event('open'));
+        }
       }
     }, 10);
   }
@@ -30,6 +33,9 @@ export class MockWebSocket {
 
   close() {
     this.readyState = 3; // CLOSED
+    if (this.openTimeout) {
+      clearTimeout(this.openTimeout);
+    }
     if (this.onclose) {
       this.onclose(new CloseEvent('close'));
     }

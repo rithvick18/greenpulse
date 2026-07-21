@@ -18,18 +18,22 @@ class Base(DeclarativeBase):
 
 from sqlalchemy.pool import StaticPool
 
-engine_kwargs = {
-    "echo": settings.DEBUG,
-    "future": True,
-}
-
+engine_kwargs = {}
 if "sqlite" in settings.DATABASE_URL:
-    engine_kwargs["connect_args"] = {"check_same_thread": False}
-    engine_kwargs["poolclass"] = StaticPool
+    engine_kwargs = {
+        "poolclass": StaticPool,
+        "connect_args": {"check_same_thread": False},
+        "echo": settings.DEBUG,
+        "future": True,
+    }
 else:
-    engine_kwargs["pool_pre_ping"] = True
-    engine_kwargs["pool_size"] = 10
-    engine_kwargs["max_overflow"] = 20
+    engine_kwargs = {
+        "pool_pre_ping": True,
+        "pool_size": settings.DB_POOL_SIZE,
+        "max_overflow": settings.DB_MAX_OVERFLOW,
+        "echo": settings.DEBUG,
+        "future": True,
+    }
 
 engine = create_async_engine(
     settings.DATABASE_URL,

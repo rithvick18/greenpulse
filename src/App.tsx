@@ -10,6 +10,8 @@ import { InfrastructureView } from './components/views/InfrastructureView';
 import { PublicSafetyView } from './components/views/PublicSafetyView';
 import { IndustrialPrecisionView } from './components/views/IndustrialPrecisionView';
 
+import { BackendErrorOverlay } from './components/common/BackendErrorOverlay';
+
 const DashboardContent: React.FC = () => {
   const { activeTab } = useTelemetry();
 
@@ -29,6 +31,7 @@ export const App: React.FC = () => {
   return (
     <TelemetryProvider>
       <div className="min-h-screen flex flex-col bg-background text-on-surface font-mono selection:bg-primary selection:text-background">
+        <BackendErrorOverlay />
         <Header />
         <div className="flex flex-1 overflow-hidden">
           <Sidebar />

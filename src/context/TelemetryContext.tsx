@@ -51,6 +51,9 @@ interface TelemetryContextType {
   toggleEmergencyOverride: () => void;
   searchQuery: string;
   setSearchQuery: (query: string) => void;
+  connectionStatus: 'connecting' | 'connected' | 'error';
+  connectionError: string | null;
+  reconnect: () => void;
 }
 
 const TelemetryContext = createContext<TelemetryContextType | undefined>(undefined);
@@ -186,6 +189,16 @@ export const TelemetryProvider: React.FC<{ children: React.ReactNode }> = ({ chi
     setLineStatus(prev => prev === 'RUNNING' ? 'PAUSED' : prev === 'PAUSED' ? 'CALIBRATING' : 'RUNNING');
   };
 
+  const [connectionStatus, setConnectionStatus] = useState<'connecting' | 'connected' | 'error'>('connecting');
+  const [connectionError, setConnectionError] = useState<string | null>(null);
+  const [reconnectTrigger, setReconnectTrigger] = useState(0);
+
+  const reconnect = () => {
+    setConnectionStatus('connecting');
+    setConnectionError(null);
+    setReconnectTrigger(prev => prev + 1);
+  };
+
   const acknowledgeAlert = (id: string) => {
     setActiveAlerts(prev => prev.map(a => a.id === id ? { ...a, status: 'RESOLVED' } : a));
   };
@@ -193,70 +206,81 @@ export const TelemetryProvider: React.FC<{ children: React.ReactNode }> = ({ chi
   // Real-time WebSocket connection to backend telemetry stream
   useEffect(() => {
     let ws: WebSocket | null = null;
-    let reconnectTimeout: ReturnType<typeof setTimeout>;
 
     const connect = () => {
-      ws = new WebSocket(WS_URL);
+      try {
+        ws = new WebSocket(WS_URL);
 
-      ws.onmessage = (event) => {
-        try {
-          const data = JSON.parse(event.data);
+        ws.onopen = () => {
+          setConnectionStatus('connected');
+          setConnectionError(null);
+        };
 
-          // Handle WebSocket event wrappers or direct JSON payloads
-          const payload = data.data || data;
+        ws.onmessage = (event) => {
+          setConnectionStatus('connected');
+          setConnectionError(null);
+          try {
+            const data = JSON.parse(event.data);
+            const payload = data.data || data;
 
-          if (payload.cityHealthIndex !== undefined) setCityHealthIndex(payload.cityHealthIndex);
-          if (payload.totalPowerMW !== undefined) setTotalPowerMW(payload.totalPowerMW);
-          if (payload.peakLoadMW !== undefined) setPeakLoadMW(payload.peakLoadMW);
-          if (payload.cleanEnergyPercent !== undefined) setCleanEnergyPercent(payload.cleanEnergyPercent);
-          if (payload.trafficCongestionPercent !== undefined) setTrafficCongestionPercent(payload.trafficCongestionPercent);
-          if (payload.airQualityAQI !== undefined) setAirQualityAQI(payload.airQualityAQI);
-          if (payload.batteryReserveMWh !== undefined) setBatteryReserveMWh(payload.batteryReserveMWh);
-          if (payload.gridFrequencyHz !== undefined) setGridFrequencyHz(payload.gridFrequencyHz);
-          if (payload.waterPressurePsi !== undefined) setWaterPressurePsi(payload.waterPressurePsi);
-          if (payload.seismicMv !== undefined) setSeismicMv(payload.seismicMv);
-          if (payload.avCorridorFlow !== undefined) setAvCorridorFlow(payload.avCorridorFlow);
-          if (payload.activeAlerts !== undefined) setActiveAlerts(payload.activeAlerts);
-          if (payload.energySources !== undefined) setEnergySources(payload.energySources);
-          if (payload.substations !== undefined) setSubstations(payload.substations);
-          if (payload.intersections !== undefined) setIntersections(payload.intersections);
-          if (payload.safetyUnits !== undefined) setSafetyUnits(payload.safetyUnits);
-          if (payload.structuralNodes !== undefined) setStructuralNodes(payload.structuralNodes);
-          if (payload.roboticCells !== undefined) setRoboticCells(payload.roboticCells);
-          if (payload.lineStatus !== undefined) setLineStatus(payload.lineStatus);
-          if (payload.maintenanceQueue !== undefined) setMaintenanceQueue(payload.maintenanceQueue);
-          if (payload.totalSensors !== undefined) setTotalSensors(payload.totalSensors);
-          if (payload.meshHealthPct !== undefined) setMeshHealthPct(payload.meshHealthPct);
-          if (payload.activeIncidents !== undefined) setActiveIncidents(payload.activeIncidents);
-          if (payload.avgResponseEtaMinutes !== undefined) setAvgResponseEtaMinutes(payload.avgResponseEtaMinutes);
-          if (payload.trafficCameras !== undefined) setTrafficCameras(payload.trafficCameras);
-          if (payload.avVectorsActive !== undefined) setAvVectorsActive(payload.avVectorsActive);
-          if (payload.emergencyOverrideActive !== undefined) setEmergencyOverrideActive(payload.emergencyOverrideActive);
-        } catch (err) {
-          console.error('Failed to parse telemetry message from WebSocket:', err);
-        }
-      };
+            if (payload.cityHealthIndex !== undefined) setCityHealthIndex(payload.cityHealthIndex);
+            if (payload.totalPowerMW !== undefined) setTotalPowerMW(payload.totalPowerMW);
+            if (payload.peakLoadMW !== undefined) setPeakLoadMW(payload.peakLoadMW);
+            if (payload.cleanEnergyPercent !== undefined) setCleanEnergyPercent(payload.cleanEnergyPercent);
+            if (payload.trafficCongestionPercent !== undefined) setTrafficCongestionPercent(payload.trafficCongestionPercent);
+            if (payload.airQualityAQI !== undefined) setAirQualityAQI(payload.airQualityAQI);
+            if (payload.batteryReserveMWh !== undefined) setBatteryReserveMWh(payload.batteryReserveMWh);
+            if (payload.gridFrequencyHz !== undefined) setGridFrequencyHz(payload.gridFrequencyHz);
+            if (payload.waterPressurePsi !== undefined) setWaterPressurePsi(payload.waterPressurePsi);
+            if (payload.seismicMv !== undefined) setSeismicMv(payload.seismicMv);
+            if (payload.avCorridorFlow !== undefined) setAvCorridorFlow(payload.avCorridorFlow);
+            if (payload.activeAlerts !== undefined) setActiveAlerts(payload.activeAlerts);
+            if (payload.energySources !== undefined) setEnergySources(payload.energySources);
+            if (payload.substations !== undefined) setSubstations(payload.substations);
+            if (payload.intersections !== undefined) setIntersections(payload.intersections);
+            if (payload.safetyUnits !== undefined) setSafetyUnits(payload.safetyUnits);
+            if (payload.structuralNodes !== undefined) setStructuralNodes(payload.structuralNodes);
+            if (payload.roboticCells !== undefined) setRoboticCells(payload.roboticCells);
+            if (payload.lineStatus !== undefined) setLineStatus(payload.lineStatus);
+            if (payload.maintenanceQueue !== undefined) setMaintenanceQueue(payload.maintenanceQueue);
+            if (payload.totalSensors !== undefined) setTotalSensors(payload.totalSensors);
+            if (payload.meshHealthPct !== undefined) setMeshHealthPct(payload.meshHealthPct);
+            if (payload.activeIncidents !== undefined) setActiveIncidents(payload.activeIncidents);
+            if (payload.avgResponseEtaMinutes !== undefined) setAvgResponseEtaMinutes(payload.avgResponseEtaMinutes);
+            if (payload.trafficCameras !== undefined) setTrafficCameras(payload.trafficCameras);
+            if (payload.avVectorsActive !== undefined) setAvVectorsActive(payload.avVectorsActive);
+            if (payload.emergencyOverrideActive !== undefined) setEmergencyOverrideActive(payload.emergencyOverrideActive);
+          } catch (err) {
+            console.error('Failed to parse telemetry message from WebSocket:', err);
+          }
+        };
 
-      ws.onerror = (error) => {
-        console.error('Telemetry WebSocket error:', error);
-      };
+        ws.onerror = (error) => {
+          console.error('Telemetry WebSocket error:', error);
+          setConnectionStatus('error');
+          setConnectionError(`Unable to establish connection with telemetry backend at ${WS_URL}`);
+        };
 
-      ws.onclose = () => {
-        reconnectTimeout = setTimeout(connect, 3000);
-      };
+        ws.onclose = () => {
+          setConnectionStatus('error');
+          setConnectionError(`Backend WebSocket connection closed (${WS_URL}).`);
+        };
+      } catch (err: any) {
+        setConnectionStatus('error');
+        setConnectionError(`Failed to initialize WebSocket connection: ${err?.message || err}`);
+      }
     };
 
     connect();
 
     return () => {
       if (ws) {
+        ws.onclose = null;
+        ws.onerror = null;
         ws.close();
       }
-      if (reconnectTimeout) {
-        clearTimeout(reconnectTimeout);
-      }
     };
-  }, []);
+  }, [reconnectTrigger]);
 
   return (
     <TelemetryContext.Provider
@@ -297,6 +321,9 @@ export const TelemetryProvider: React.FC<{ children: React.ReactNode }> = ({ chi
         toggleEmergencyOverride,
         searchQuery,
         setSearchQuery,
+        connectionStatus,
+        connectionError,
+        reconnect,
       }}
     >
       {children}

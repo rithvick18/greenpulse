@@ -31,6 +31,8 @@ class Settings(BaseSettings):
     DATABASE_URL: str = Field(
         default="postgresql+asyncpg://postgres:postgres@localhost:5432/greenpulse"
     )
+    DB_POOL_SIZE: int = Field(default=10)
+    DB_MAX_OVERFLOW: int = Field(default=20)
 
     # Redis
     REDIS_URL: str = Field(default="redis://localhost:6379/0")
