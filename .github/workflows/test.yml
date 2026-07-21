@@ -26,15 +26,23 @@ jobs:
         with:
           python-version: '3.9'
           cache: 'pip'
+          cache-dependency-path: 'greenpulse-backend/requirements-dev.txt'
 
       - name: Install Dependencies
         run: |
           cd greenpulse-backend
           python -m pip install --upgrade pip
-          pip install -r requirements.txt
-          pip install pytest pytest-asyncio pytest-cov httpx aiosqlite python-multipart black ruff
+          pip install -r requirements-dev.txt
+          pip install aiosqlite python-multipart
 
       - name: Run Pytest Backend Test Suite & Coverage
+        env:
+          DATABASE_URL: "sqlite+aiosqlite:///:memory:"
+          REDIS_URL: "redis://localhost:6379/0"
+          SECRET_KEY: "test_secret_key_for_unit_and_integration_testing_greenpulse_32b"
+          DEBUG: "True"
+          ENVIRONMENT: "testing"
+          PYTHONPATH: "."
         run: |
           cd greenpulse-backend
           pytest --cov=app --cov-report=term-missing --cov-report=xml
