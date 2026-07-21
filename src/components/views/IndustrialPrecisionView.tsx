@@ -12,14 +12,8 @@ import {
 } from 'lucide-react';
 
 export const IndustrialPrecisionView: React.FC = () => {
-  const [lineStatus, setLineStatus] = useState<'RUNNING' | 'PAUSED' | 'CALIBRATING'>('RUNNING');
+  const { roboticCells, lineStatus, toggleLineStatus } = useTelemetry();
 
-  const roboticCells = [
-    { id: 'ARM-01', location: 'Assembly Line A (Precision Optics)', thermalC: 48.2, maxC: 80, yieldPct: 99.8, status: 'NOMINAL' },
-    { id: 'ARM-02', location: 'Assembly Line B (Heavy Stamping)', thermalC: 64.5, maxC: 85, yieldPct: 98.9, status: 'ELEVATED_TEMP' },
-    { id: 'ARM-03', location: 'Assembly Line C (Micro Electronics)', thermalC: 41.0, maxC: 75, yieldPct: 99.9, status: 'NOMINAL' },
-    { id: 'ARM-04', location: 'Packaging & Automated Sorting', thermalC: 38.5, maxC: 70, yieldPct: 99.5, status: 'NOMINAL' },
-  ];
 
   return (
     <div className="p-6 space-y-6 font-mono grid-bg">
@@ -55,7 +49,7 @@ export const IndustrialPrecisionView: React.FC = () => {
             <h2 className="text-sm font-bold text-on-surface tracking-wider uppercase font-mono">
               ROBOTIC CELL THERMAL & YIELD TELEMETRY
             </h2>
-            <span className="text-xs text-outline">4 ROBOTIC CELLS ACTIVE</span>
+            <span className="text-xs text-outline">{roboticCells.length} ROBOTIC CELLS ACTIVE</span>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -98,7 +92,7 @@ export const IndustrialPrecisionView: React.FC = () => {
 
           <div className="space-y-3">
             <button
-              onClick={() => setLineStatus(prev => prev === 'RUNNING' ? 'PAUSED' : 'RUNNING')}
+              onClick={toggleLineStatus}
               className={`w-full py-2 font-mono text-xs font-bold border transition-colors ${
                 lineStatus === 'RUNNING' 
                   ? 'bg-amber-500 text-black border-amber-400 hover:bg-amber-400' 

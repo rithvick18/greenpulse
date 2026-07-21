@@ -14,17 +14,8 @@ import {
 } from 'lucide-react';
 
 export const EnergyGridView: React.FC = () => {
-  const { energySources, totalPowerMW, cleanEnergyPercent } = useTelemetry();
+  const { energySources, totalPowerMW, cleanEnergyPercent, substations, batteryReserveMWh, gridFrequencyHz } = useTelemetry();
   const [loadSheddingActive, setLoadSheddingActive] = useState(false);
-
-  const substations = [
-    { id: 'SUB-01', name: 'Substation North Docks', loadPct: 78, voltage: '138 kV', status: 'NOMINAL' },
-    { id: 'SUB-02', name: 'Substation Civic District', loadPct: 62, voltage: '138 kV', status: 'NOMINAL' },
-    { id: 'SUB-03', name: 'Substation Industrial Zone A', loadPct: 91, voltage: '230 kV', status: 'HIGH_LOAD' },
-    { id: 'SUB-04', name: 'Substation Harbor West', loadPct: 45, voltage: '138 kV', status: 'NOMINAL' },
-    { id: 'SUB-05', name: 'Substation Metro South', loadPct: 84, voltage: '230 kV', status: 'NOMINAL' },
-    { id: 'SUB-06', name: 'Substation High Tech Park', loadPct: 53, voltage: '138 kV', status: 'NOMINAL' },
-  ];
 
   return (
     <div className="p-6 space-y-6 font-mono grid-bg">
@@ -56,7 +47,7 @@ export const EnergyGridView: React.FC = () => {
             <span>BATTERY RESERVE</span>
             <Battery className="w-4 h-4 text-sky-400" />
           </div>
-          <div className="mt-2 text-3xl font-extrabold text-sky-400 font-display">850 MWh</div>
+          <div className="mt-2 text-3xl font-extrabold text-sky-400 font-display">{batteryReserveMWh} MWh</div>
           <div className="mt-1 text-[10px] text-emerald-400 font-bold">READY FOR DISCHARGE</div>
         </div>
 
@@ -66,7 +57,7 @@ export const EnergyGridView: React.FC = () => {
             <span>GRID FREQUENCY</span>
             <Activity className="w-4 h-4 text-emerald-400" />
           </div>
-          <div className="mt-2 text-3xl font-extrabold text-on-surface font-display">50.02 Hz</div>
+          <div className="mt-2 text-3xl font-extrabold text-on-surface font-display">{gridFrequencyHz} Hz</div>
           <div className="mt-1 text-[10px] text-emerald-400 font-bold">SYNCHRONIZED</div>
         </div>
       </div>
@@ -79,35 +70,41 @@ export const EnergyGridView: React.FC = () => {
             <h2 className="text-sm font-bold text-on-surface tracking-wider uppercase font-mono">
               HIGH VOLTAGE SUBSTATION HEALTH MATRIX
             </h2>
-            <span className="text-xs text-outline">6 SUBSTATIONS ACTIVE</span>
+            <span className="text-xs text-outline">{substations.length} SUBSTATIONS ACTIVE</span>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            {substations.map((sub) => (
-              <div key={sub.id} className="p-4 bg-surface-container-low border border-outline-variant hover:border-primary transition-all space-y-2">
-                <div className="flex items-center justify-between">
-                  <span className="font-bold text-xs text-on-surface">{sub.name}</span>
-                  <span className={`px-2 py-0.5 text-[9px] font-bold border ${
-                    sub.status === 'HIGH_LOAD' ? 'bg-amber-950 border-amber-500 text-amber-400 animate-pulse' : 'bg-emerald-950 border-emerald-500 text-emerald-400'
-                  }`}>
-                    {sub.status}
-                  </span>
-                </div>
+          {substations.length === 0 ? (
+            <div className="text-center py-8 text-xs text-outline">
+              Awaiting real-time substation data...
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              {substations.map((sub) => (
+                <div key={sub.id} className="p-4 bg-surface-container-low border border-outline-variant hover:border-primary transition-all space-y-2">
+                  <div className="flex items-center justify-between">
+                    <span className="font-bold text-xs text-on-surface">{sub.name}</span>
+                    <span className={`px-2 py-0.5 text-[9px] font-bold border ${
+                      sub.status === 'HIGH_LOAD' ? 'bg-amber-950 border-amber-500 text-amber-400 animate-pulse' : 'bg-emerald-950 border-emerald-500 text-emerald-400'
+                    }`}>
+                      {sub.status}
+                    </span>
+                  </div>
 
-                <div className="flex items-center justify-between text-xs text-outline">
-                  <span>VOLTAGE: <strong className="text-on-surface">{sub.voltage}</strong></span>
-                  <span>LOAD: <strong className="text-primary">{sub.loadPct}%</strong></span>
-                </div>
+                  <div className="flex items-center justify-between text-xs text-outline">
+                    <span>VOLTAGE: <strong className="text-on-surface">{sub.voltage}</strong></span>
+                    <span>LOAD: <strong className="text-primary">{sub.loadPct}%</strong></span>
+                  </div>
 
-                <div className="w-full bg-surface-container-highest h-2 border border-outline-variant/40 overflow-hidden">
-                  <div 
-                    className={`h-full ${sub.loadPct > 90 ? 'bg-red-500' : sub.loadPct > 75 ? 'bg-amber-400' : 'bg-emerald-400'}`}
-                    style={{ width: `${sub.loadPct}%` }}
-                  />
+                  <div className="w-full bg-surface-container-highest h-2 border border-outline-variant/40 overflow-hidden">
+                    <div 
+                      className={`h-full ${sub.loadPct > 90 ? 'bg-red-500' : sub.loadPct > 75 ? 'bg-amber-400' : 'bg-emerald-400'}`}
+                      style={{ width: `${sub.loadPct}%` }}
+                    />
+                  </div>
                 </div>
-              </div>
-            ))}
-          </div>
+              ))}
+            </div>
+          )}
         </div>
 
         {/* Load Shedding & Grid Command Controls */}

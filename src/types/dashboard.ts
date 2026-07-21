@@ -53,3 +53,43 @@ export interface StructuralNode {
   vibrationHz: number;
   status: 'STABLE' | 'ELEVATED_STRESS' | 'CRITICAL_CHECK';
 }
+
+export interface Substation {
+  id: string;
+  name: string;
+  loadPct: number;
+  voltage: string;
+  status: 'NOMINAL' | 'HIGH_LOAD' | 'MAINTENANCE';
+}
+
+export interface RoboticCell {
+  id: string;
+  location: string;
+  thermalC: number;
+  maxC: number;
+  yieldPct: number;
+  status: 'NOMINAL' | 'ELEVATED_TEMP' | 'MAINTENANCE';
+}
+
+export interface MaintenanceItem {
+  id: string;
+  asset: string;
+  issue: string;
+  priority: 'HIGH' | 'MEDIUM' | 'LOW';
+  assignedTech: string;
+}
+
+export interface IncidentItem {
+  id: string;
+  title: string;
+  description: string;
+  priority: number;
+  unitsDispatched?: string[];
+}
+
+export interface TrafficCamera {
+  id: string;
+  location: string;
+  fps: number;
+  status: 'LIVE' | 'OFFLINE';
+}

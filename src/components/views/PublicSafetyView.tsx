@@ -14,7 +14,7 @@ import {
 } from 'lucide-react';
 
 export const PublicSafetyView: React.FC = () => {
-  const { safetyUnits } = useTelemetry();
+  const { safetyUnits, activeIncidents, avgResponseEtaMinutes } = useTelemetry();
   const [dispatchStatus, setDispatchStatus] = useState<string | null>(null);
 
   const triggerDispatch = (callsign: string) => {
@@ -42,12 +42,12 @@ export const PublicSafetyView: React.FC = () => {
         <div className="flex items-center space-x-4 bg-surface-container-low p-2 border border-outline-variant">
           <div>
             <div className="text-[10px] text-outline uppercase font-bold">AVG RESPONSE ETA</div>
-            <div className="text-sm font-extrabold text-emerald-400">3.8 MINUTES</div>
+            <div className="text-sm font-extrabold text-emerald-400">{avgResponseEtaMinutes} MINUTES</div>
           </div>
           <div className="h-6 w-px bg-outline-variant" />
           <div>
             <div className="text-[10px] text-outline uppercase font-bold">ACTIVE UNITS</div>
-            <div className="text-sm font-extrabold text-primary">18 DEPLOYED</div>
+            <div className="text-sm font-extrabold text-primary">{safetyUnits.length} DEPLOYED</div>
           </div>
         </div>
       </div>
@@ -120,27 +120,27 @@ export const PublicSafetyView: React.FC = () => {
             <p className="text-[11px] text-outline">Real-time emergency dispatch queue</p>
           </div>
 
-          <div className="p-4 bg-surface-container-low border border-red-500/40 space-y-2">
-            <div className="flex items-center justify-between text-xs text-red-400 font-bold">
-              <span>INCIDENT #INC-809</span>
-              <span className="animate-pulse font-bold">PRIORITY 1</span>
+          {activeIncidents.map((inc) => (
+            <div 
+              key={inc.id} 
+              className={`p-4 bg-surface-container-low border space-y-2 ${
+                inc.priority === 1 ? 'border-red-500/40' : 'border-outline-variant'
+              }`}
+            >
+              <div className={`flex items-center justify-between text-xs font-bold ${
+                inc.priority === 1 ? 'text-red-400' : 'text-amber-400'
+              }`}>
+                <span>INCIDENT #{inc.id}</span>
+                <span className={inc.priority === 1 ? 'animate-pulse font-bold' : ''}>
+                  PRIORITY {inc.priority}
+                </span>
+              </div>
+              <div className="text-xs font-bold text-on-surface">{inc.title}</div>
+              <p className="text-[11px] text-outline">
+                {inc.description}
+              </p>
             </div>
-            <div className="text-xs font-bold text-on-surface">Harbor Tunnel Ventilation Surge</div>
-            <p className="text-[11px] text-outline">
-              MED-82 & FIRE-12 dispatched. AV Corridor cleared on Route 4.
-            </p>
-          </div>
-
-          <div className="p-4 bg-surface-container border border-outline-variant space-y-2">
-            <div className="flex items-center justify-between text-xs text-amber-400 font-bold">
-              <span>INCIDENT #INC-804</span>
-              <span>PRIORITY 2</span>
-            </div>
-            <div className="text-xs font-bold text-on-surface">Civic Plaza Traffic Signal Fault</div>
-            <p className="text-[11px] text-outline">
-              PATROL-AV-09 rerouting traffic via peripheral lanes.
-            </p>
-          </div>
+          ))}
         </div>
       </div>
     </div>

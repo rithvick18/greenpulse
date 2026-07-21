@@ -16,16 +16,9 @@ import {
 } from 'lucide-react';
 
 export const TrafficControlView: React.FC = () => {
-  const { intersections, trafficCongestionPercent } = useTelemetry();
+  const { intersections, trafficCongestionPercent, trafficCameras, avVectorsActive } = useTelemetry();
   const [signalMode, setSignalMode] = useState<'AI_ADAPTIVE' | 'MANUAL' | 'EMERGENCY_CORRIDOR'>('AI_ADAPTIVE');
   const [cameraActive, setCameraActive] = useState<string>('CAM-01');
-
-  const cameras = [
-    { id: 'CAM-01', location: 'Harbor Tunnel Entrance (North)', fps: 60, status: 'LIVE' },
-    { id: 'CAM-02', location: 'Grand Ave & 4th Intersection', fps: 60, status: 'LIVE' },
-    { id: 'CAM-03', location: 'Expressway Loop 9 Junction', fps: 30, status: 'LIVE' },
-    { id: 'CAM-04', location: 'Civic Center Bus Terminal', fps: 60, status: 'LIVE' },
-  ];
 
   return (
     <div className="p-6 space-y-6 font-mono grid-bg">
@@ -103,10 +96,10 @@ export const TrafficControlView: React.FC = () => {
               <div className="flex items-center space-x-3">
                 <span className="font-bold">{cameraActive}</span>
                 <span className="text-slate-400">|</span>
-                <span>{cameras.find(c => c.id === cameraActive)?.location}</span>
+                <span>{trafficCameras.find(c => c.id === cameraActive)?.location || 'Sector Optical Feed'}</span>
               </div>
               <div className="flex items-center space-x-4">
-                <span>FPS: 60.0</span>
+                <span>FPS: {trafficCameras.find(c => c.id === cameraActive)?.fps || 60}.0</span>
                 <span>RES: 4K HDR</span>
                 <span className="text-red-500 font-bold animate-pulse">● REC</span>
               </div>
@@ -137,7 +130,7 @@ export const TrafficControlView: React.FC = () => {
             {/* Camera Selectors Footer */}
             <div className="z-10 flex items-center justify-between bg-black/70 p-2 border border-outline-variant">
               <div className="flex items-center space-x-2">
-                {cameras.map((cam) => (
+                {trafficCameras.map((cam) => (
                   <button
                     key={cam.id}
                     onClick={() => setCameraActive(cam.id)}
@@ -151,7 +144,7 @@ export const TrafficControlView: React.FC = () => {
                   </button>
                 ))}
               </div>
-              <span className="text-[10px] text-outline">ANALYTICS: 1,420 AV VECTORS ACTIVE</span>
+              <span className="text-[10px] text-outline">ANALYTICS: {avVectorsActive.toLocaleString()} AV VECTORS ACTIVE</span>
             </div>
           </div>
         </div>

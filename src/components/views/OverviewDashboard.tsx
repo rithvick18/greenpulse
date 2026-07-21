@@ -19,9 +19,14 @@ export const OverviewDashboard: React.FC = () => {
   const { 
     cityHealthIndex, 
     totalPowerMW, 
+    peakLoadMW,
     cleanEnergyPercent, 
     trafficCongestionPercent, 
     airQualityAQI, 
+    gridFrequencyHz,
+    waterPressurePsi,
+    seismicMv,
+    avCorridorFlow,
     activeAlerts,
     acknowledgeAlert,
     energySources
@@ -61,7 +66,7 @@ export const OverviewDashboard: React.FC = () => {
           </div>
           <div className="mt-1 flex items-center justify-between text-[10px]">
             <span className="text-emerald-400 font-bold">{cleanEnergyPercent}% RENEWABLE SHARE</span>
-            <span className="text-outline">PEAK LOAD 980 MW</span>
+            <span className="text-outline">PEAK LOAD {peakLoadMW} MW</span>
           </div>
           <div className="w-full bg-surface-container-highest h-1.5 mt-3">
             <div className="bg-amber-400 h-full transition-all duration-500" style={{ width: `${cleanEnergyPercent}%` }} />
@@ -151,7 +156,7 @@ export const OverviewDashboard: React.FC = () => {
           {/* Graphical Waveform representation */}
           <div className="mt-4 p-4 bg-surface-container-lowest border border-outline-variant rounded-sm relative overflow-hidden">
             <div className="flex items-center justify-between mb-2">
-              <span className="text-[10px] text-outline uppercase font-bold">SYNCHRONOUS FREQUENCY OSCILLATION (50.02 Hz)</span>
+              <span className="text-[10px] text-outline uppercase font-bold">SYNCHRONOUS FREQUENCY OSCILLATION ({gridFrequencyHz} Hz)</span>
               <span className="text-[10px] text-emerald-400 font-bold">PHASE LOCK OK</span>
             </div>
             <svg className="w-full h-24 stroke-primary fill-primary/10" viewBox="0 0 500 100">
@@ -181,7 +186,7 @@ export const OverviewDashboard: React.FC = () => {
                 </div>
               </div>
               <div className="text-right">
-                <div className="text-xs font-bold text-emerald-400">62 PSI</div>
+                <div className="text-xs font-bold text-emerald-400">{waterPressurePsi} PSI</div>
                 <div className="text-[9px] text-outline uppercase">NOMINAL</div>
               </div>
             </div>
@@ -196,7 +201,7 @@ export const OverviewDashboard: React.FC = () => {
                 </div>
               </div>
               <div className="text-right">
-                <div className="text-xs font-bold text-emerald-400">0.02 Mv</div>
+                <div className="text-xs font-bold text-emerald-400">{seismicMv} Mv</div>
                 <div className="text-[9px] text-outline uppercase">QUIESCENT</div>
               </div>
             </div>
@@ -211,7 +216,7 @@ export const OverviewDashboard: React.FC = () => {
                 </div>
               </div>
               <div className="text-right">
-                <div className="text-xs font-bold text-primary">8,420 AV/h</div>
+                <div className="text-xs font-bold text-primary">{avCorridorFlow.toLocaleString()} AV/h</div>
                 <div className="text-[9px] text-emerald-400 uppercase font-bold">CLEAR</div>
               </div>
             </div>

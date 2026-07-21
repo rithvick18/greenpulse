@@ -12,13 +12,7 @@ import {
 } from 'lucide-react';
 
 export const InfrastructureView: React.FC = () => {
-  const { structuralNodes, airQualityAQI } = useTelemetry();
-
-  const maintenanceQueue = [
-    { id: 'MNT-402', asset: 'Water Main #12 (North Docks)', issue: 'Pressure fluctuation +14 PSI', priority: 'HIGH', assignedTech: 'TECH-UNIT-4' },
-    { id: 'MNT-399', asset: 'Sub-Bay Rail Tunnel Sensors', issue: 'Vibration frequency harmonic test', priority: 'MEDIUM', assignedTech: 'TECH-UNIT-2' },
-    { id: 'MNT-395', asset: 'AQI Sensor Station #8', issue: 'Optical lens calibration check', priority: 'LOW', assignedTech: 'AUTO-DRONE-1' },
-  ];
+  const { structuralNodes, airQualityAQI, maintenanceQueue, totalSensors, meshHealthPct } = useTelemetry();
 
   return (
     <div className="p-6 space-y-6 font-mono grid-bg">
@@ -38,9 +32,9 @@ export const InfrastructureView: React.FC = () => {
         </div>
 
         <div className="flex items-center space-x-3 text-xs bg-surface-container-low p-2 border border-outline-variant">
-          <span className="text-outline">TOTAL SENSORS: <strong className="text-on-surface">14,820</strong></span>
+          <span className="text-outline">TOTAL SENSORS: <strong className="text-on-surface">{totalSensors.toLocaleString()}</strong></span>
           <span className="text-outline">|</span>
-          <span className="text-emerald-400 font-bold">MESH HEALTH: 99.8%</span>
+          <span className="text-emerald-400 font-bold">MESH HEALTH: {meshHealthPct}%</span>
         </div>
       </div>
 
