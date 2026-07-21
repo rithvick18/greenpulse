@@ -45,7 +45,7 @@ class RateLimitMiddleware(BaseHTTPMiddleware):
         self.requests: Dict[str, list] = {}
 
     async def dispatch(self, request: Request, call_next):
-        if request.url.path in ["/metrics", "/docs", "/openapi.json"]:
+        if request.url.path in ["/metrics", "/docs", "/openapi.json"] or settings.ENVIRONMENT == "testing":
             return await call_next(request)
 
         client_ip = request.client.host if request.client else "127.0.0.1"

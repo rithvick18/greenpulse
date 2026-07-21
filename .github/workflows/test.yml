@@ -1,0 +1,60 @@
+name: GreenPulse OS Full Test Suite CI
+
+on:
+  push:
+    branches: [ main, master, develop ]
+  pull_request:
+    branches: [ main, master, develop ]
+
+jobs:
+  backend-pytest:
+    name: FastAPI Backend Pytest
+    runs-on: ubuntu-latest
+
+    services:
+      redis:
+        image: redis:7-alpine
+        ports:
+          - 6379:6379
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.9
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.9'
+          cache: 'pip'
+
+      - name: Install Dependencies
+        run: |
+          cd greenpulse-backend
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install pytest pytest-asyncio pytest-cov httpx aiosqlite python-multipart black ruff
+
+      - name: Run Pytest Backend Test Suite & Coverage
+        run: |
+          cd greenpulse-backend
+          pytest --cov=app --cov-report=term-missing --cov-report=xml
+
+  frontend-vitest:
+    name: React Vite Frontend Vitest
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js 20.x
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20.x'
+          cache: 'npm'
+
+      - name: Install NPM Dependencies
+        run: npm ci
+
+      - name: Run Vitest Frontend Test Suite & Coverage
+        run: npm run test:coverage

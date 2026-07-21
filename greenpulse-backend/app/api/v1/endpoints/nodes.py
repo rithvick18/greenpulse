@@ -73,6 +73,7 @@ async def get_node(
 
 
 @router.put("/{node_id}", response_model=NodeResponse, dependencies=[Depends(write_roles)])
+@router.patch("/{node_id}", response_model=NodeResponse, dependencies=[Depends(write_roles)])
 async def update_node(
     node_id: str,
     node_in: NodeUpdate,

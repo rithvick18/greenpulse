@@ -1,3 +1,4 @@
+from datetime import datetime, timezone
 from typing import List, Optional
 from fastapi import APIRouter, Depends, Query, status
 from sqlalchemy import select
@@ -156,3 +157,23 @@ async def list_triggered_alerts(
     result = await db.execute(query)
     alerts = result.scalars().all()
     return alerts
+
+
+@router.patch("/{alert_id}/resolve", response_model=AlertResponse, dependencies=[Depends(operator_required)])
+async def resolve_alert(
+    alert_id: int,
+    db: AsyncSession = Depends(get_db),
+):
+    """
+    Mark an active alert as resolved (Admin or Operator).
+    """
+    result = await db.execute(select(Alert).where(Alert.id == alert_id))
+    alert = result.scalar_one_or_none()
+    if not alert:
+        raise NotFoundException(detail=f"Alert with ID {alert_id} not found")
+
+    alert.resolved_at = datetime.now(timezone.utc)
+    await db.commit()
+    await db.refresh(alert)
+    return alert
+
