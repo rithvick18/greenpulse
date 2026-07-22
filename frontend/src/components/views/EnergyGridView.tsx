@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { useTelemetry } from '../../context/TelemetryContext';
 import { 
   Zap, 
@@ -14,8 +14,16 @@ import {
 } from 'lucide-react';
 
 export const EnergyGridView: React.FC = () => {
-  const { energySources, totalPowerMW, cleanEnergyPercent, substations, batteryReserveMWh, gridFrequencyHz } = useTelemetry();
-  const [loadSheddingActive, setLoadSheddingActive] = useState(false);
+  const {
+    energySources,
+    totalPowerMW,
+    cleanEnergyPercent,
+    substations,
+    batteryReserveMWh,
+    gridFrequencyHz,
+    loadSheddingActive,
+    toggleLoadShedding,
+  } = useTelemetry();
 
   return (
     <div className="p-6 space-y-6 font-mono grid-bg">
@@ -120,7 +128,7 @@ export const EnergyGridView: React.FC = () => {
             <div className="flex items-center justify-between">
               <span className="text-xs font-bold text-on-surface">AUTOMATED LOAD SHED</span>
               <button
-                onClick={() => setLoadSheddingActive(prev => !prev)}
+                onClick={toggleLoadShedding}
                 className={`px-3 py-1 text-xs font-bold border transition-colors ${
                   loadSheddingActive ? 'bg-red-600 border-red-400 text-white animate-pulse' : 'bg-surface border-outline-variant text-on-surface hover:text-primary'
                 }`}

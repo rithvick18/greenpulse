@@ -53,6 +53,9 @@ interface TelemetryContextType {
   avVectorsActive: number;
   emergencyOverrideActive: boolean;
   toggleEmergencyOverride: () => void;
+  loadSheddingActive: boolean;
+  toggleLoadShedding: () => void;
+  activateLoadShedding: () => void;
   searchQuery: string;
   setSearchQuery: (query: string) => void;
   connectionStatus: 'connecting' | 'connected' | 'error';
@@ -90,6 +93,7 @@ export const TelemetryProvider: React.FC<{ children: React.ReactNode }> = ({ chi
   // Alerts & Overrides
   const [activeAlerts, setActiveAlerts] = useState<AlertItem[]>([]);
   const [emergencyOverrideActive, setEmergencyOverrideActive] = useState(false);
+  const [loadSheddingActive, setLoadSheddingActive] = useState(false);
 
   // Registered sensor nodes (sourced from /api/nodes/, lower frequency than telemetry)
   const [nodes, setNodes] = useState<ApiNode[]>([]);
@@ -136,6 +140,14 @@ export const TelemetryProvider: React.FC<{ children: React.ReactNode }> = ({ chi
 
   const toggleEmergencyOverride = () => {
     setEmergencyOverrideActive(prev => !prev);
+  };
+
+  const toggleLoadShedding = () => {
+    setLoadSheddingActive(prev => !prev);
+  };
+
+  const activateLoadShedding = () => {
+    setLoadSheddingActive(true);
   };
 
   const toggleLineStatus = () => {
@@ -304,6 +316,9 @@ export const TelemetryProvider: React.FC<{ children: React.ReactNode }> = ({ chi
         avVectorsActive,
         emergencyOverrideActive,
         toggleEmergencyOverride,
+        loadSheddingActive,
+        toggleLoadShedding,
+        activateLoadShedding,
         searchQuery,
         setSearchQuery,
         connectionStatus,
