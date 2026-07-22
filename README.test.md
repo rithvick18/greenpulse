@@ -72,11 +72,3 @@ npm run test:coverage
   - `OverviewDashboard.test.tsx`: Validates KPI metric cards (City Health, Net Generation, Traffic Congestion, Air Quality AQI).
   - `DashboardViews.test.tsx`: Validates rendering and mounting of Traffic, Energy Grid, Infrastructure, Public Safety, and Industrial views.
 
----
-
-## ⚙️ Continuous Integration (GitHub Actions)
-
-Continuous Integration is configured in `.github/workflows/test.yml`. It runs automatically on every `push` and `pull_request` to `main`, `master`, and `develop` branches:
-- Launches a Redis 7 service container.
-- Installs Python 3.9 dependencies and runs backend Pytest with XML coverage output.
-- Installs Node 20.x dependencies and runs frontend Vitest with V8 coverage output.
