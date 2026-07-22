@@ -8,20 +8,23 @@ This document describes the structure, execution instructions, and coverage benc
 
 ```
 greenpulse-smart-city-dashboard/
-├── greenpulse-backend/
-│   ├── .env.test                        # Test environment variables
-│   ├── tests/
-│   │   ├── conftest.py                  # Pytest async SQLite, JWT headers & DB fixtures
-│   │   ├── unit/                        # Security, alert engine, simulation, utils, WS manager
-│   │   ├── integration/                 # REST API, MQTT callbacks, WebSocket real-time feeds
-│   │   ├── e2e/                         # E2E full telemetry & alert resolution pipeline
-│   │   └── performance/                 # Concurrent load & API throughput tests
-└── src/
-    ├── setupTests.ts                    # Vitest environment setup & browser/WS mocks
-    └── __tests__/
-        ├── context/                     # TelemetryContext state & WebSocket integration tests
-        ├── components/layout/           # Header, Sidebar, Footer layout component tests
-        └── views/                       # Overview & operational module view tests
+├── backend/
+│   ├── fastapi/
+│   │   ├── .env.test                    # Test environment variables
+│   │   ├── tests/
+│   │   │   ├── conftest.py              # Pytest async SQLite, JWT headers & DB fixtures
+│   │   │   ├── unit/                    # Security, alert engine, simulation, utils, WS manager
+│   │   │   ├── integration/             # REST API, MQTT callbacks, WebSocket real-time feeds
+│   │   │   ├── e2e/                     # E2E full telemetry & alert resolution pipeline
+│   │   │   └── performance/             # Concurrent load & API throughput tests
+│   └── django/                          # Django application services & models
+└── frontend/
+    └── src/
+        ├── setupTests.ts                # Vitest environment setup & browser/WS mocks
+        └── __tests__/
+            ├── context/                 # TelemetryContext state & WebSocket integration tests
+            ├── components/layout/       # Header, Sidebar, Footer layout component tests
+            └── views/                   # Overview & operational module view tests
 ```
 
 ---
@@ -29,7 +32,7 @@ greenpulse-smart-city-dashboard/
 ## ⚡ Backend Testing (FastAPI + Pytest)
 
 ### 🚀 Quick Run Commands
-Navigate to `greenpulse-backend/`:
+Navigate to `backend/fastapi/`:
 ```bash
 # Activate Virtual Environment
 source venv/bin/activate
@@ -62,7 +65,7 @@ pytest --cov=app --cov-report=term-missing
 ## ⚛️ Frontend Testing (React + Vitest)
 
 ### 🚀 Quick Run Commands
-From the project root:
+Navigate to `frontend/`:
 ```bash
 # Execute Frontend Test Suite
 npm run test
