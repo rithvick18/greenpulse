@@ -94,6 +94,13 @@ class LatestTelemetryEndpointTests(TestCase):
         self.assertIn("source", response.data)
         self.assertIn("data", response.data)
 
+        # When falling back to DB, data is a composite payload
+        data = response.data["data"]
+        self.assertIsInstance(data, dict)
+        self.assertIn("city_health_index", data)
+        self.assertIn("metrics", data)
+        self.assertIsInstance(data["metrics"], list)
+
         # Check Cache-Control headers for 1-second interval polling
         self.assertIn("no-cache", response.headers.get("Cache-Control", ""))
 

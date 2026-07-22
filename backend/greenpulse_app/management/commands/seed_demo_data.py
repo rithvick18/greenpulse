@@ -8,6 +8,7 @@ from django.core.management.base import BaseCommand
 from django.db import connection, transaction
 from django.utils import timezone
 
+from greenpulse_app.views import build_composite_telemetry_payload
 from greenpulse_app.models import Alert, AlertRule, Node, Telemetry
 
 
@@ -119,12 +120,12 @@ class Command(BaseCommand):
             self._create_alerts(nodes, now)
 
         latest = max(telemetry, key=lambda row: row.time)
-        payload = {
-            "time": latest.time.isoformat(),
-            "node_id": latest.node_id,
-            "metric_name": latest.metric_name,
-            "value": latest.value,
-        }
+        recent_records = list(Telemetry.objects.order_by("-time")[:20])
+        payload = build_composite_telemetry_payload(recent_records)
+        payload["time"] = latest.time.isoformat()
+        payload["node_id"] = latest.node_id
+        payload["metric_name"] = latest.metric_name
+        payload["value"] = latest.value
         self._write_latest_to_redis(payload)
         self.stdout.write(
             self.style.SUCCESS(

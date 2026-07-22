@@ -158,33 +158,35 @@ export const TelemetryProvider: React.FC<{ children: React.ReactNode }> = ({ chi
 
   const updateTelemetryData = (payload: any) => {
     if (!payload) return;
-    if (payload.cityHealthIndex !== undefined) setCityHealthIndex(payload.cityHealthIndex);
-    if (payload.totalPowerMW !== undefined) setTotalPowerMW(payload.totalPowerMW);
-    if (payload.peakLoadMW !== undefined) setPeakLoadMW(payload.peakLoadMW);
-    if (payload.cleanEnergyPercent !== undefined) setCleanEnergyPercent(payload.cleanEnergyPercent);
-    if (payload.trafficCongestionPercent !== undefined) setTrafficCongestionPercent(payload.trafficCongestionPercent);
-    if (payload.airQualityAQI !== undefined) setAirQualityAQI(payload.airQualityAQI);
-    if (payload.batteryReserveMWh !== undefined) setBatteryReserveMWh(payload.batteryReserveMWh);
-    if (payload.gridFrequencyHz !== undefined) setGridFrequencyHz(payload.gridFrequencyHz);
-    if (payload.waterPressurePsi !== undefined) setWaterPressurePsi(payload.waterPressurePsi);
-    if (payload.seismicMv !== undefined) setSeismicMv(payload.seismicMv);
-    if (payload.avCorridorFlow !== undefined) setAvCorridorFlow(payload.avCorridorFlow);
-    if (payload.activeAlerts !== undefined) setActiveAlerts(payload.activeAlerts);
-    if (payload.energySources !== undefined) setEnergySources(payload.energySources);
-    if (payload.substations !== undefined) setSubstations(payload.substations);
-    if (payload.intersections !== undefined) setIntersections(payload.intersections);
-    if (payload.safetyUnits !== undefined) setSafetyUnits(payload.safetyUnits);
-    if (payload.structuralNodes !== undefined) setStructuralNodes(payload.structuralNodes);
-    if (payload.roboticCells !== undefined) setRoboticCells(payload.roboticCells);
-    if (payload.lineStatus !== undefined) setLineStatus(payload.lineStatus);
-    if (payload.maintenanceQueue !== undefined) setMaintenanceQueue(payload.maintenanceQueue);
-    if (payload.totalSensors !== undefined) setTotalSensors(payload.totalSensors);
-    if (payload.meshHealthPct !== undefined) setMeshHealthPct(payload.meshHealthPct);
-    if (payload.activeIncidents !== undefined) setActiveIncidents(payload.activeIncidents);
-    if (payload.avgResponseEtaMinutes !== undefined) setAvgResponseEtaMinutes(payload.avgResponseEtaMinutes);
-    if (payload.trafficCameras !== undefined) setTrafficCameras(payload.trafficCameras);
-    if (payload.avVectorsActive !== undefined) setAvVectorsActive(payload.avVectorsActive);
-    if (payload.emergencyOverrideActive !== undefined) setEmergencyOverrideActive(payload.emergencyOverrideActive);
+    const val = (camel: string, snake: string) => payload[camel] ?? payload[snake];
+
+    if (val('cityHealthIndex', 'city_health_index') !== undefined) setCityHealthIndex(val('cityHealthIndex', 'city_health_index'));
+    if (val('totalPowerMW', 'net_generation') !== undefined) setTotalPowerMW(val('totalPowerMW', 'net_generation'));
+    if (val('peakLoadMW', 'peak_load_mw') !== undefined) setPeakLoadMW(val('peakLoadMW', 'peak_load_mw'));
+    if (val('cleanEnergyPercent', 'clean_energy_percent') !== undefined) setCleanEnergyPercent(val('cleanEnergyPercent', 'clean_energy_percent'));
+    if (val('trafficCongestionPercent', 'traffic_congestion') !== undefined) setTrafficCongestionPercent(val('trafficCongestionPercent', 'traffic_congestion'));
+    if (val('airQualityAQI', 'air_quality_index') !== undefined) setAirQualityAQI(val('airQualityAQI', 'air_quality_index'));
+    if (val('batteryReserveMWh', 'battery_reserve') !== undefined) setBatteryReserveMWh(val('batteryReserveMWh', 'battery_reserve'));
+    if (val('gridFrequencyHz', 'grid_frequency') !== undefined) setGridFrequencyHz(val('gridFrequencyHz', 'grid_frequency'));
+    if (val('waterPressurePsi', 'water_pressure') !== undefined) setWaterPressurePsi(val('waterPressurePsi', 'water_pressure'));
+    if (val('seismicMv', 'seismic_activity') !== undefined) setSeismicMv(val('seismicMv', 'seismic_activity'));
+    if (val('avCorridorFlow', 'av_corridor_flow') !== undefined) setAvCorridorFlow(val('avCorridorFlow', 'av_corridor_flow'));
+    if (val('activeAlerts', 'active_alerts') !== undefined) setActiveAlerts(val('activeAlerts', 'active_alerts'));
+    if (val('energySources', 'generation_breakdown') !== undefined) setEnergySources(val('energySources', 'generation_breakdown'));
+    if (val('substations', 'substations') !== undefined) setSubstations(val('substations', 'substations'));
+    if (val('intersections', 'intersections') !== undefined) setIntersections(val('intersections', 'intersections'));
+    if (val('safetyUnits', 'safety_units') !== undefined) setSafetyUnits(val('safetyUnits', 'safety_units'));
+    if (val('structuralNodes', 'structural_nodes') !== undefined) setStructuralNodes(val('structuralNodes', 'structural_nodes'));
+    if (val('roboticCells', 'robotic_cells') !== undefined) setRoboticCells(val('roboticCells', 'robotic_cells'));
+    if (val('lineStatus', 'line_status') !== undefined) setLineStatus(val('lineStatus', 'line_status'));
+    if (val('maintenanceQueue', 'maintenance_queue') !== undefined) setMaintenanceQueue(val('maintenanceQueue', 'maintenance_queue'));
+    if (val('totalSensors', 'total_sensors') !== undefined) setTotalSensors(val('totalSensors', 'total_sensors'));
+    if (val('meshHealthPct', 'mesh_health_pct') !== undefined) setMeshHealthPct(val('meshHealthPct', 'mesh_health_pct'));
+    if (val('activeIncidents', 'active_incidents') !== undefined) setActiveIncidents(val('activeIncidents', 'active_incidents'));
+    if (val('avgResponseEtaMinutes', 'emergency_response_avg_min') !== undefined) setAvgResponseEtaMinutes(val('avgResponseEtaMinutes', 'emergency_response_avg_min'));
+    if (val('trafficCameras', 'traffic_cameras') !== undefined) setTrafficCameras(val('trafficCameras', 'traffic_cameras'));
+    if (val('avVectorsActive', 'av_vectors_active') !== undefined) setAvVectorsActive(val('avVectorsActive', 'av_vectors_active'));
+    if (val('emergencyOverrideActive', 'emergency_override_active') !== undefined) setEmergencyOverrideActive(val('emergencyOverrideActive', 'emergency_override_active'));
   };
 
   // Poll the Django telemetry endpoint every 3 seconds. Connection status is
