@@ -1,6 +1,6 @@
 # GreenPulse OS (VISION) Smart-City Dashboard - Comprehensive Test Suite
 
-This document describes the structure, execution instructions, and coverage benchmarks for the production-grade test suite covering both the **FastAPI Backend** and the **React + Vite + TypeScript Frontend** of **GreenPulse OS**.
+This document describes the structure, execution instructions, and coverage benchmarks for the production-grade test suite covering both the **Django REST Backend** and the **React + Vite + TypeScript Frontend** of **GreenPulse OS**.
 
 ---
 
@@ -9,15 +9,11 @@ This document describes the structure, execution instructions, and coverage benc
 ```
 greenpulse-smart-city-dashboard/
 ├── backend/
-│   ├── fastapi/
-│   │   ├── .env.test                    # Test environment variables
-│   │   ├── tests/
-│   │   │   ├── conftest.py              # Pytest async SQLite, JWT headers & DB fixtures
-│   │   │   ├── unit/                    # Security, alert engine, simulation, utils, WS manager
-│   │   │   ├── integration/             # REST API, MQTT callbacks, WebSocket real-time feeds
-│   │   │   ├── e2e/                     # E2E full telemetry & alert resolution pipeline
-│   │   │   └── performance/             # Concurrent load & API throughput tests
 │   └── django/                          # Django application services & models
+│       ├── manage.py
+│       ├── requirements.txt
+│       ├── greenpulse_django/           # Project settings & WSGI configuration
+│       └── greenpulse_app/              # Application models, serializers, views, and tests
 └── frontend/
     └── src/
         ├── setupTests.ts                # Vitest environment setup & browser/WS mocks
@@ -29,36 +25,25 @@ greenpulse-smart-city-dashboard/
 
 ---
 
-## ⚡ Backend Testing (FastAPI + Pytest)
+## ⚡ Backend Testing (Django REST Framework)
 
 ### 🚀 Quick Run Commands
-Navigate to `backend/fastapi/`:
+Navigate to `backend/django/`:
 ```bash
 # Activate Virtual Environment
 source venv/bin/activate
 
-# Execute Full Backend Test Suite
-pytest
-
-# Execute Backend Test Suite with Coverage
-pytest --cov=app --cov-report=term-missing
+# Execute Full Django Backend Test Suite
+python manage.py test
 ```
 
 ### 📊 Backend Test Highlights & Coverage
-- **Unit Tests**:
-  - `test_security.py`: Password hashing with bcrypt, JWT token creation, expiration, and decoding validation.
-  - `test_services.py`: AlertEngine condition evaluation, Analytics 5-minute bucket aggregation, TelemetryProcessor pipeline.
-  - `test_simulation.py`: TelemetrySimulator snapshot generation, metric bounds, start/stop loop.
-  - `test_websocket_manager.py`: ConnectionManager connection management, subscription topics, text broadcasting.
-  - `test_utils_tasks.py`: Time formatting, ISO string parsing, AsyncioTaskScheduler async worker execution.
-- **Integration Tests**:
-  - `test_api.py`: OAuth2 password form login, JSON login, token refresh, logout, RBAC permissions, Node CRUD, Alert Rules CRUD, Historical Metrics date validation.
-  - `test_websocket.py`: Connection handshake, subscriber snapshot streams, ping/pong health, sub/unsub commands.
-  - `test_mqtt.py`: Async MQTT message callback, topic parsing, payload verification, database telemetry insertion.
-- **E2E Tests**:
-  - `test_full_flow.py`: Full end-to-end telemetry pipeline from node creation to rule trigger and alert resolution.
-- **Performance Tests**:
-  - `test_load.py`: High-concurrency telemetry ingestion throughput & API rate limit resilience.
+- **Model & Serializer Tests**:
+  - Node model & serializer validation for metadata, location data, and status attributes.
+  - Telemetry serializer structure validation for metric payload attributes.
+  - AlertRule and Alert model/serializer validation.
+- **REST API Endpoint Tests**:
+  - `LatestTelemetryEndpointTests`: Validates DRF endpoint `/api/telemetry/latest/`, cache control headers (`no-cache`), and CORS wildcard headers (`Access-Control-Allow-Origin: *`).
 
 ---
 
