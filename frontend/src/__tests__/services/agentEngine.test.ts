@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import { processEngineerCommand } from '../../services/agentEngine';
 
 describe('processEngineerCommand', () => {
@@ -9,12 +9,20 @@ describe('processEngineerCommand', () => {
     activeAlerts: [{ status: 'ACTIVE' }, { status: 'RESOLVED' }],
   };
 
-  it('routes an industrial assembly-line request through the NAVIGATE tool', () => {
-    const result = processEngineerCommand(
+  afterEach(() => vi.unstubAllGlobals());
+
+  it('forwards an industrial command to the secure backend and returns its tool result', async () => {
+    const fetchMock = vi.fn(async () => ({ ok: true, json: async () => ({
+      status: 'success', agent: 'Sentinel AI', message: 'Routing to **Industrial Precision**.',
+      actionTaken: { type: 'NAVIGATE', payload: { viewId: 'INDUSTRIAL' } },
+    }) }));
+    vi.stubGlobal('fetch', fetchMock);
+    const result = await processEngineerCommand(
       'take me to panel where there are industrial assembly line settings',
       telemetryContext,
     );
 
+    expect(fetchMock).toHaveBeenCalledWith('/api/ai/agent/', expect.objectContaining({ method: 'POST' }));
     expect(result.message).toContain('**Industrial Precision**');
     expect(result.actionTaken).toEqual({
       type: 'NAVIGATE',
@@ -22,17 +30,12 @@ describe('processEngineerCommand', () => {
     });
   });
 
-  it('returns a live engineering status report from telemetry context', () => {
-    const result = processEngineerCommand('give me a system status report', telemetryContext);
-
-    expect(result.actionTaken).toBeUndefined();
-    expect(result.message).toContain('**98.7**');
-    expect(result.message).toContain('**842.5 MW**');
-    expect(result.message).toContain('**1**');
-  });
-
-  it('prioritizes load-shed execution over energy navigation', () => {
-    const result = processEngineerCommand('load shed Industrial Substation 04', telemetryContext);
+  it('returns a backend load-shed action without client-side tool inference', async () => {
+    vi.stubGlobal('fetch', vi.fn(async () => ({ ok: true, json: async () => ({
+      status: 'success', agent: 'Sentinel AI', message: 'Load shedding armed.',
+      actionTaken: { type: 'LOAD_SHED', payload: { target: 'Industrial Substation 04' } },
+    }) })));
+    const result = await processEngineerCommand('load shed Industrial Substation 04', telemetryContext);
 
     expect(result.actionTaken).toEqual({
       type: 'LOAD_SHED',

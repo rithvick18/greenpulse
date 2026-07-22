@@ -47,3 +47,30 @@ export const getAlerts = async (): Promise<ApiAlert[]> => {
   const data = await request<ApiAlert[]>('/api/alerts/');
   return Array.isArray(data) ? data : [];
 };
+
+export interface AgentCommandResponse {
+  status: 'success';
+  agent: 'Sentinel AI';
+  message: string;
+  actionTaken?: {
+    type: 'NAVIGATE' | 'OVERRIDE' | 'LOAD_SHED';
+    payload: any;
+  };
+}
+
+/** POST /api/ai/agent/ — execute a Sentinel command through the Django proxy. */
+export const postAgentCommand = async (
+  prompt: string,
+  telemetryContext: any,
+): Promise<AgentCommandResponse> => {
+  const path = '/api/ai/agent/';
+  const res = await fetch(`${API_BASE}${path}`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ prompt, telemetry_context: telemetryContext }),
+  });
+  if (!res.ok) {
+    throw new ApiError(`API request to ${path} failed`, res.status);
+  }
+  return res.json() as Promise<AgentCommandResponse>;
+};

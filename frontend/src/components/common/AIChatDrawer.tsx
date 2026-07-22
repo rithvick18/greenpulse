@@ -58,6 +58,7 @@ export const AIChatDrawer: React.FC<AIChatDrawerProps> = ({ activeView, setActiv
   const [isOpen, setIsOpen] = useState(false);
   const [command, setCommand] = useState('');
   const [messages, setMessages] = useState<ChatMessage[]>([INITIAL_MESSAGE]);
+  const [isAnalyzing, setIsAnalyzing] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const commandIdRef = useRef(1);
 
@@ -83,30 +84,38 @@ export const AIChatDrawer: React.FC<AIChatDrawerProps> = ({ activeView, setActiv
     }
   };
 
-  const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     const input = command.trim();
 
     if (!input) return;
 
-    const result = processEngineerCommand(input, telemetry);
     const operatorMessage: ChatMessage = {
       id: commandIdRef.current++,
       role: 'operator',
       content: input,
     };
-    const sentinelMessage: ChatMessage = {
-      id: commandIdRef.current++,
-      role: 'sentinel',
-      content: result.message,
-      actionTaken: result.actionTaken,
-    };
-
-    setMessages(current => [...current, operatorMessage, sentinelMessage]);
+    setMessages(current => [...current, operatorMessage]);
     setCommand('');
+    setIsAnalyzing(true);
 
-    if (result.actionTaken) {
-      executeAction(result.actionTaken);
+    try {
+      const result = await processEngineerCommand(input, telemetry);
+      setMessages(current => [...current, {
+        id: commandIdRef.current++,
+        role: 'sentinel',
+        content: result.message,
+        actionTaken: result.actionTaken,
+      }]);
+      if (result.actionTaken) executeAction(result.actionTaken);
+    } catch {
+      setMessages(current => [...current, {
+        id: commandIdRef.current++,
+        role: 'sentinel',
+        content: 'Command uplink unavailable. Sentinel AI could not reach the secure backend.',
+      }]);
+    } finally {
+      setIsAnalyzing(false);
     }
   };
 
@@ -185,6 +194,9 @@ export const AIChatDrawer: React.FC<AIChatDrawerProps> = ({ activeView, setActiv
             <MarkdownMessage content={message.content} />
           </article>
         ))}
+        {isAnalyzing && (
+          <p className="text-emerald-400" role="status">Sentinel AI analyzing telemetry...</p>
+        )}
         <div ref={messagesEndRef} />
       </div>
 
@@ -203,7 +215,7 @@ export const AIChatDrawer: React.FC<AIChatDrawerProps> = ({ activeView, setActiv
           />
           <button
             type="submit"
-            disabled={!command.trim()}
+            disabled={!command.trim() || isAnalyzing}
             className="flex items-center gap-1 border border-emerald-400 bg-emerald-500 px-3 py-2 text-[10px] font-extrabold tracking-wider text-[#06251c] transition hover:bg-emerald-300 disabled:cursor-not-allowed disabled:border-emerald-900 disabled:bg-emerald-950 disabled:text-emerald-800"
           >
             <Send className="h-3 w-3" aria-hidden="true" />

@@ -108,3 +108,22 @@ class LatestTelemetryEndpointTests(TestCase):
         response = self.client.get("/api/telemetry/latest/", HTTP_ORIGIN="http://localhost:5173")
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.headers.get("Access-Control-Allow-Origin"), "*")
+
+
+class SentinelAgentEndpointTests(TestCase):
+    def setUp(self):
+        self.client = APIClient()
+
+    def test_agent_uses_safe_keyword_fallback_when_key_is_not_configured(self):
+        response = self.client.post(
+            "/api/ai/agent/",
+            {"prompt": "Take me to industrial assembly line settings", "telemetry_context": {}},
+            format="json",
+        )
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data["agent"], "Sentinel AI")
+        self.assertEqual(response.data["actionTaken"], {"type": "NAVIGATE", "payload": {"viewId": "INDUSTRIAL"}})
+
+    def test_agent_rejects_missing_prompt(self):
+        response = self.client.post("/api/ai/agent/", {"telemetry_context": {}}, format="json")
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)

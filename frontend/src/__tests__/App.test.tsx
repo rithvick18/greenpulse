@@ -4,10 +4,11 @@ import userEvent from '@testing-library/user-event';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { App } from '../App';
 
-const buildFetch = () => vi.fn(async () => ({
-  ok: true,
-  json: async () => ({ status: 'success', data: [] }),
-}));
+const buildFetch = () => vi.fn(async (input: RequestInfo | URL) => (
+  String(input).includes('/api/ai/agent/')
+    ? { ok: true, json: async () => ({ status: 'success', agent: 'Sentinel AI', message: 'Routing core command interface to **Industrial Precision**.', actionTaken: { type: 'NAVIGATE', payload: { viewId: 'INDUSTRIAL' } } }) }
+    : { ok: true, json: async () => ({ status: 'success', data: [] }) }
+));
 
 describe('App Sentinel integration', () => {
   afterEach(() => {
@@ -27,7 +28,7 @@ describe('App Sentinel integration', () => {
     );
     await user.click(screen.getByRole('button', { name: 'RUN' }));
 
-    expect(screen.getByText(/Routing core command interface to/i)).toBeInTheDocument();
-    expect(screen.getByText('INDUSTRIAL PRECISION & HEAVY AUTOMATION COMMAND')).toBeInTheDocument();
+    expect(await screen.findByText(/Routing core command interface to/i)).toBeInTheDocument();
+    expect(await screen.findByText('INDUSTRIAL PRECISION & HEAVY AUTOMATION COMMAND')).toBeInTheDocument();
   });
 });

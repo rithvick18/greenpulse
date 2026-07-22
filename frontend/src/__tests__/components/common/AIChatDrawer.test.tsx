@@ -5,10 +5,15 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import { AIChatDrawer } from '../../../components/common/AIChatDrawer';
 import { TelemetryProvider, useTelemetry } from '../../../context/TelemetryContext';
 
-const buildFetch = () => vi.fn(async () => ({
-  ok: true,
-  json: async () => ({ status: 'success', data: [] }),
-}));
+const buildFetch = () => vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
+  if (String(input).includes('/api/ai/agent/')) {
+    const prompt = JSON.parse(String(init?.body ?? '{}')).prompt ?? '';
+    if (/override/i.test(prompt)) return { ok: true, json: async () => ({ status: 'success', agent: 'Sentinel AI', message: 'Override armed.', actionTaken: { type: 'OVERRIDE', payload: { target: 'CITYWIDE_AUX' } } }) };
+    if (/load shed/i.test(prompt)) return { ok: true, json: async () => ({ status: 'success', agent: 'Sentinel AI', message: 'Load shed armed.', actionTaken: { type: 'LOAD_SHED', payload: { target: 'Industrial Substation 04' } } }) };
+    return { ok: true, json: async () => ({ status: 'success', agent: 'Sentinel AI', message: 'Routing core command interface to **Industrial Precision**.', actionTaken: { type: 'NAVIGATE', payload: { viewId: 'INDUSTRIAL' } } }) };
+  }
+  return { ok: true, json: async () => ({ status: 'success', data: [] }) };
+});
 
 const ToolStateProbe: React.FC = () => {
   const { emergencyOverrideActive, loadSheddingActive } = useTelemetry();
@@ -44,8 +49,8 @@ describe('AIChatDrawer', () => {
     );
     await user.click(screen.getByRole('button', { name: 'RUN' }));
 
+    expect(await screen.findByText(/Routing core command interface to/i)).toBeInTheDocument();
     expect(setActiveView).toHaveBeenCalledWith('INDUSTRIAL');
-    expect(screen.getByText(/Routing core command interface to/i)).toBeInTheDocument();
     expect(screen.getByText('TOOL: NAVIGATE')).toBeInTheDocument();
   });
 
@@ -65,10 +70,10 @@ describe('AIChatDrawer', () => {
 
     await user.type(terminal, 'trigger emergency override');
     await user.click(screen.getByRole('button', { name: 'RUN' }));
-    expect(screen.getByTestId('emergency-state')).toHaveTextContent('ACTIVE');
+    expect(await screen.findByTestId('emergency-state')).toHaveTextContent('ACTIVE');
 
     await user.type(terminal, 'load shed Industrial Substation 04');
     await user.click(screen.getByRole('button', { name: 'RUN' }));
-    expect(screen.getByTestId('load-shed-state')).toHaveTextContent('ARMED');
+    expect(await screen.findByTestId('load-shed-state')).toHaveTextContent('ARMED');
   });
 });

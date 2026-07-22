@@ -1,5 +1,7 @@
 import json
 import os
+from urllib.error import HTTPError, URLError
+from urllib.request import Request, urlopen
 try:
     import redis
 except ImportError:
@@ -13,6 +15,116 @@ from django.conf import settings
 
 from greenpulse_app.models import Telemetry, Node, Alert
 from greenpulse_app.serializers import TelemetrySerializer, NodeSerializer, AlertSerializer
+
+
+SENTINEL_PERSONA = "You are 'Sentinel AI', Lead Operations Engineer for GreenPulse OS. You have full command over municipal systems."
+SENTINEL_VIEW_IDS = ["OVERVIEW", "TRAFFIC", "ENERGY", "INFRASTRUCTURE", "SAFETY", "INDUSTRIAL"]
+
+SENTINEL_TOOLS = [{
+    "functionDeclarations": [
+        {
+            "name": "navigate_to_view",
+            "description": "Navigate the operator console to an operational view.",
+            "parameters": {
+                "type": "OBJECT",
+                "properties": {"viewId": {"type": "STRING", "enum": SENTINEL_VIEW_IDS}},
+                "required": ["viewId"],
+            },
+        },
+        {
+            "name": "trigger_load_shedding",
+            "description": "Trigger load shedding for the named grid target.",
+            "parameters": {
+                "type": "OBJECT",
+                "properties": {"target": {"type": "STRING"}},
+                "required": ["target"],
+            },
+        },
+        {
+            "name": "execute_emergency_override",
+            "description": "Execute an emergency override for the named system.",
+            "parameters": {
+                "type": "OBJECT",
+                "properties": {"system": {"type": "STRING"}},
+                "required": ["system"],
+            },
+        },
+    ],
+}]
+
+
+def sentinel_fallback(prompt):
+    """Predictable local command handling used when Gemini is unavailable."""
+    normalized = prompt.lower()
+    if "override" in normalized or "emergency trigger" in normalized:
+        return {
+            "message": "Acknowledged. Emergency override has been issued to **CITYWIDE_AUX**.",
+            "actionTaken": {"type": "OVERRIDE", "payload": {"target": "CITYWIDE_AUX"}},
+        }
+    if "load shed" in normalized or "load-shed" in normalized or "grid balance" in normalized:
+        return {
+            "message": "Acknowledged. Load-shed balancing has been armed for **Industrial Substation 04**.",
+            "actionTaken": {"type": "LOAD_SHED", "payload": {"target": "Industrial Substation 04"}},
+        }
+
+    views = [
+        ("INDUSTRIAL", ("industrial", "assembly line", "robotic", "manufacturing")),
+        ("ENERGY", ("energy", "substation", "power grid")),
+        ("TRAFFIC", ("traffic", "signal", "congestion")),
+        ("INFRASTRUCTURE", ("infrastructure", "sensor", "structural", "water pipeline")),
+        ("SAFETY", ("safety", "incident", "emergency", "dispatch")),
+        ("OVERVIEW", ("overview", "home", "city health", "telemetry")),
+    ]
+    for view_id, keywords in views:
+        if any(keyword in normalized for keyword in keywords):
+            return {
+                "message": f"Acknowledged. Routing core command interface to **{view_id.title()}**.",
+                "actionTaken": {"type": "NAVIGATE", "payload": {"viewId": view_id}},
+            }
+    return {"message": "Acknowledged. No authorized tool matched that command; telemetry remains under supervision."}
+
+
+def extract_sentinel_response(gemini_payload):
+    """Convert Gemini text/function-call output to the stable UI contract."""
+    candidate = (gemini_payload.get("candidates") or [{}])[0]
+    parts = (candidate.get("content") or {}).get("parts") or []
+    message_parts = []
+    action = None
+    for part in parts:
+        if part.get("text"):
+            message_parts.append(part["text"])
+        function_call = part.get("functionCall") or {}
+        name, args = function_call.get("name"), function_call.get("args") or {}
+        if name == "navigate_to_view" and args.get("viewId") in SENTINEL_VIEW_IDS:
+            action = {"type": "NAVIGATE", "payload": {"viewId": args["viewId"]}}
+        elif name == "trigger_load_shedding" and args.get("target"):
+            action = {"type": "LOAD_SHED", "payload": {"target": str(args["target"])}}
+        elif name == "execute_emergency_override" and args.get("system"):
+            action = {"type": "OVERRIDE", "payload": {"target": str(args["system"])}}
+
+    result = {"message": "\n".join(message_parts) or "Acknowledged. Sentinel AI completed command analysis."}
+    if action:
+        result["actionTaken"] = action
+    return result
+
+
+def call_gemini_sentinel(prompt, telemetry_context):
+    api_key = os.getenv("GEMINI_API_KEY", "").strip()
+    if not api_key or api_key == "your_gemini_api_key_here":
+        raise RuntimeError("GEMINI_API_KEY is not configured")
+
+    payload = {
+        "systemInstruction": {"parts": [{"text": SENTINEL_PERSONA}]},
+        "contents": [{"role": "user", "parts": [{"text": (
+            f"Operator command: {prompt}\n\n"
+            f"Live telemetry context (JSON): {json.dumps(telemetry_context, default=str)}"
+        )}]}],
+        "tools": SENTINEL_TOOLS,
+    }
+    url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-3.1-flash-lite:generateContent?key=" + api_key
+    request = Request(url, data=json.dumps(payload).encode("utf-8"), headers={"Content-Type": "application/json"}, method="POST")
+    with urlopen(request, timeout=10) as response:
+        return extract_sentinel_response(json.loads(response.read().decode("utf-8")))
 
 
 def get_redis_client():
@@ -819,3 +931,22 @@ def list_alerts(request):
         return Response({"status": "success", "data": serializer.data}, status=status.HTTP_200_OK)
     except Exception as e:
         return Response({"status": "error", "message": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+@api_view(["POST"])
+@permission_classes([AllowAny])
+def sentinel_agent(request):
+    """Proxy Sentinel commands to Gemini without exposing the API key to React."""
+    prompt = request.data.get("prompt") if isinstance(request.data, dict) else None
+    telemetry_context = request.data.get("telemetry_context", {}) if isinstance(request.data, dict) else {}
+    if not isinstance(prompt, str) or not prompt.strip():
+        return Response({"status": "error", "message": "prompt must be a non-empty string"}, status=status.HTTP_400_BAD_REQUEST)
+    if not isinstance(telemetry_context, dict):
+        telemetry_context = {}
+
+    try:
+        result = call_gemini_sentinel(prompt.strip(), telemetry_context)
+    except (RuntimeError, HTTPError, URLError, TimeoutError, ValueError, OSError):
+        result = sentinel_fallback(prompt.strip())
+
+    return Response({"status": "success", "agent": "Sentinel AI", **result}, status=status.HTTP_200_OK)

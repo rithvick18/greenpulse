@@ -3,6 +3,23 @@ from pathlib import Path
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
+
+def load_backend_env():
+    """Load local development variables without adding a runtime dependency."""
+    env_file = BASE_DIR / ".env"
+    if not env_file.exists():
+        return
+
+    for line in env_file.read_text(encoding="utf-8").splitlines():
+        line = line.strip()
+        if not line or line.startswith("#") or "=" not in line:
+            continue
+        key, value = line.split("=", 1)
+        os.environ.setdefault(key.strip(), value.strip().strip('"').strip("'"))
+
+
+load_backend_env()
+
 SECRET_KEY = os.getenv("SECRET_KEY", "django-insecure-greenpulse-smart-city-key-2026")
 
 DEBUG = True
