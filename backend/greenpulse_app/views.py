@@ -15,6 +15,7 @@ from django.conf import settings
 
 from greenpulse_app.models import Telemetry, Node, Alert
 from greenpulse_app.serializers import TelemetrySerializer, NodeSerializer, AlertSerializer
+from greenpulse_app.ui_manifest import GREENPULSE_UI_MANIFEST
 
 
 SENTINEL_PERSONA = "You are 'Sentinel AI', Lead Operations Engineer for GreenPulse OS. You have full command over municipal systems."
@@ -24,16 +25,26 @@ SENTINEL_TOOLS = [{
     "functionDeclarations": [
         {
             "name": "navigate_to_view",
-            "description": "Navigate the operator console to an operational view.",
+            "description": "Navigates to a specific screen/module in GreenPulse OS.",
             "parameters": {
                 "type": "OBJECT",
-                "properties": {"viewId": {"type": "STRING", "enum": SENTINEL_VIEW_IDS}},
+                "properties": {
+                    "viewId": {
+                        "type": "STRING",
+                        "enum": SENTINEL_VIEW_IDS,
+                        "description": "Target view module.",
+                    },
+                    "targetComponent": {
+                        "type": "STRING",
+                        "description": "Specific component ID being targeted for context.",
+                    },
+                },
                 "required": ["viewId"],
             },
         },
         {
             "name": "trigger_load_shedding",
-            "description": "Trigger load shedding for the named grid target.",
+            "description": "Triggers load shedding on a target substation.",
             "parameters": {
                 "type": "OBJECT",
                 "properties": {"target": {"type": "STRING"}},
@@ -96,35 +107,55 @@ def extract_sentinel_response(gemini_payload):
         function_call = part.get("functionCall") or {}
         name, args = function_call.get("name"), function_call.get("args") or {}
         if name == "navigate_to_view" and args.get("viewId") in SENTINEL_VIEW_IDS:
-            action = {"type": "NAVIGATE", "payload": {"viewId": args["viewId"]}}
-        elif name == "trigger_load_shedding" and args.get("target"):
-            action = {"type": "LOAD_SHED", "payload": {"target": str(args["target"])}}
-        elif name == "execute_emergency_override" and args.get("system"):
-            action = {"type": "OVERRIDE", "payload": {"target": str(args["system"])}}
+            view_id = args["viewId"]
+            comp_id = args.get("targetComponent", "")
+            action = {"type": "NAVIGATE", "payload": {"viewId": view_id}}
+            if not message_parts:
+                comp_info = f" (Focusing on component `{comp_id}`)" if comp_id else ""
+                message_parts.append(f"Acknowledged. Initiating command override to open the **{view_id}** module{comp_info}.")
+        elif name == "trigger_load_shedding" and (args.get("target") or args.get("targetComponent")):
+            target = args.get("target") or args.get("targetComponent")
+            action = {"type": "LOAD_SHED", "payload": {"target": str(target)}}
+        elif name == "execute_emergency_override" and (args.get("system") or args.get("target")):
+            target = args.get("system") or args.get("target")
+            action = {"type": "OVERRIDE", "payload": {"target": str(target)}}
 
-    result = {"message": "\n".join(message_parts) or "Acknowledged. Sentinel AI completed command analysis."}
+    result = {"message": "\n".join(message_parts) or "Sentinel AI operational. State command."}
     if action:
         result["actionTaken"] = action
     return result
 
 
 def call_gemini_sentinel(prompt, telemetry_context):
-    api_key = os.getenv("GEMINI_API_KEY", "").strip()
+    api_key = getattr(settings, "GEMINI_API_KEY", os.getenv("GEMINI_API_KEY", "")).strip()
     if not api_key or api_key == "your_gemini_api_key_here":
         raise RuntimeError("GEMINI_API_KEY is not configured")
 
+    system_instruction = f"""You are 'Sentinel AI', the Lead Operations Engineer controlling GreenPulse OS.
+You have 100% full situational awareness over the live city telemetry and the exact UI component structure of the platform.
+
+### DEEP APP UI MANIFEST:
+{json.dumps(GREENPULSE_UI_MANIFEST, indent=2)}
+
+### LIVE CITY TELEMETRY CONTEXT:
+{json.dumps(telemetry_context, indent=2, default=str)}
+
+### INSTRUCTIONS:
+1. Act like an authoritative, highly competent infrastructure engineer.
+2. When asked about specific metrics, components, or screens, cite the exact view name and component label from the UI manifest.
+3. If the user asks to navigate, adjust, or view a component, invoke the `navigate_to_view` tool call with the target view ID.
+"""
+
     payload = {
-        "systemInstruction": {"parts": [{"text": SENTINEL_PERSONA}]},
-        "contents": [{"role": "user", "parts": [{"text": (
-            f"Operator command: {prompt}\n\n"
-            f"Live telemetry context (JSON): {json.dumps(telemetry_context, default=str)}"
-        )}]}],
+        "systemInstruction": {"parts": [{"text": system_instruction}]},
+        "contents": [{"role": "user", "parts": [{"text": prompt}]}],
         "tools": SENTINEL_TOOLS,
     }
     url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-3.1-flash-lite:generateContent?key=" + api_key
     request = Request(url, data=json.dumps(payload).encode("utf-8"), headers={"Content-Type": "application/json"}, method="POST")
     with urlopen(request, timeout=10) as response:
         return extract_sentinel_response(json.loads(response.read().decode("utf-8")))
+
 
 
 def get_redis_client():
