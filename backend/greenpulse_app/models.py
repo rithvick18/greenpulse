@@ -37,7 +37,6 @@ class Node(models.Model):
 
     class Meta:
         db_table = "nodes"
-        managed = False
 
     def __str__(self):
         return f"{self.name} ({self.id})"
@@ -65,7 +64,6 @@ class AlertRule(models.Model):
 
     class Meta:
         db_table = "alert_rules"
-        managed = False
 
     def __str__(self):
         return f"Rule #{self.id}: {self.metric_name} {self.condition} {self.threshold}"
@@ -93,7 +91,6 @@ class Alert(models.Model):
 
     class Meta:
         db_table = "alerts"
-        managed = False
 
     def __str__(self):
         return f"Alert #{self.id} [{self.severity}]: {self.message}"
