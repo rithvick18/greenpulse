@@ -1,6 +1,10 @@
 import json
 import os
-import redis
+try:
+    import redis
+except ImportError:
+    redis = None
+
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
@@ -15,6 +19,8 @@ def get_redis_client():
     """
     Utility to get Redis client connection with fast timeout for fallback handling.
     """
+    if redis is None:
+        return None
     redis_url = getattr(settings, "REDIS_URL", os.getenv("REDIS_URL", "redis://localhost:6379/0"))
     try:
         r = redis.from_url(redis_url, decode_responses=True, socket_timeout=1.0)

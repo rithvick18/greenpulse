@@ -13,12 +13,12 @@ A comprehensive smart city monitoring and management dashboard built with Django
 
 1. **Navigate to the backend directory:**
 ```bash
-cd backend/django/
+cd backend/
 ```
 
 2. **Create and activate a virtual environment:**
 ```bash
-python -m venv venv
+python3 -m venv venv
 source venv/bin/activate  # On Windows: venv\\Scripts\\activate
 ```
 
@@ -56,7 +56,7 @@ npm install
 npm run dev
 ```
 
-The frontend will be available at `http://localhost:5173`
+The frontend will be available at `http://localhost:3000`
 
 ## 🎯 Running the Full Application
 
@@ -64,7 +64,7 @@ To run both backend and frontend simultaneously, you'll need two terminal window
 
 **Terminal 1 (Backend):**
 ```bash
-cd backend/django/
+cd backend/
 source venv/bin/activate  # Activate virtual environment
 python manage.py runserver
 ```
@@ -86,7 +86,7 @@ npm run dev
 
 ### Backend Tests
 ```bash
-cd backend/django/
+cd backend/
 source venv/bin/activate
 python manage.py test
 ```
@@ -102,8 +102,11 @@ npm run test:coverage # Run tests with coverage report
 ## 🔧 Configuration
 
 ### Backend Environment Variables
-Create a `.env` file in `backend/django/` for custom configuration:
+Copy `backend/.env.example` to `backend/.env` and adjust as needed:
+```bash
+cp backend/.env.example backend/.env
 ```
+```env
 SECRET_KEY=your-secret-key
 POSTGRES_DB=greenpulse
 POSTGRES_USER=postgres
@@ -112,20 +115,25 @@ POSTGRES_HOST=localhost
 POSTGRES_PORT=5432
 REDIS_URL=redis://localhost:6379/0
 ```
+SQLite is used by default when the Postgres variables are unset.
 
 ### Frontend Configuration
-Edit `frontend/vite.config.ts` for custom build settings.
+The frontend calls the backend through relative `/api/...` URLs. During development the Vite dev server proxies these to Django (`http://localhost:8000`), so **no configuration is required** for local development and there are no CORS issues.
+
+For production, serve the frontend and backend behind a reverse proxy (e.g. nginx) so the same relative paths resolve to Django. If the backend must live on a different origin, set `VITE_API_BASE_URL` in `frontend/.env`:
+```bash
+VITE_API_BASE_URL=https://api.example.com
+```
 
 ## 📁 Project Structure
 
 ```
 greenpulse-smart-city-dashboard/
 ├── backend/
-│   └── django/                          # Django application services & models
-│       ├── manage.py
-│       ├── requirements.txt
-│       ├── greenpulse_django/           # Project settings & WSGI configuration
-│       └── greenpulse_app/              # Application models, serializers, views, and tests
+│   ├── manage.py                        # Django management script
+│   ├── requirements.txt                 # Backend Python dependencies
+│   ├── greenpulse_django/               # Project settings & WSGI configuration
+│   └── greenpulse_app/                  # Application models, serializers, views, and tests
 └── frontend/
     └── src/
         ├── App.tsx                      # Main application component

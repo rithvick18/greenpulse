@@ -1,8 +1,7 @@
 import React from 'react';
-import { render, screen, act } from '@testing-library/react';
-import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { render, screen, waitFor, act } from '@testing-library/react';
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { TelemetryProvider, useTelemetry } from '../../context/TelemetryContext';
-import { MockWebSocket } from '../../setupTests';
 
 const TestComponent: React.FC = () => {
   const {
@@ -17,6 +16,7 @@ const TestComponent: React.FC = () => {
     toggleLineStatus,
     emergencyOverrideActive,
     toggleEmergencyOverride,
+    nodes,
     connectionStatus,
     connectionError,
     reconnect,
@@ -30,6 +30,7 @@ const TestComponent: React.FC = () => {
       <span data-testid="line-status">{lineStatus}</span>
       <span data-testid="emergency-override">{emergencyOverrideActive ? 'ACTIVE' : 'INACTIVE'}</span>
       <span data-testid="alerts-count">{activeAlerts.length}</span>
+      <span data-testid="nodes-count">{nodes.length}</span>
       <span data-testid="connection-status">{connectionStatus}</span>
       <span data-testid="connection-error">{connectionError || ''}</span>
 
@@ -45,17 +46,47 @@ const TestComponent: React.FC = () => {
   );
 };
 
+/**
+ * Build a fetch mock that serves the three backend endpoints. Each call is
+ * resolved against `input` (the URL) so individual tests can assert which
+ * endpoint was hit.
+ */
+const buildFetch = (overrides: {
+  telemetry?: any;
+  nodes?: any[];
+  alerts?: any[];
+} = {}) => {
+  const telemetry = overrides.telemetry ?? null;
+  const nodes = overrides.nodes ?? [];
+  const alerts = overrides.alerts ?? [];
+  return vi.fn(async (input: RequestInfo | URL) => {
+    const url = typeof input === 'string' ? input : input.toString();
+    const envelope = (data: unknown) => ({ ok: true, json: async () => ({ status: 'success', data }) });
+    if (url.includes('/api/telemetry/latest/')) return envelope(telemetry);
+    if (url.includes('/api/nodes/')) return envelope(nodes);
+    if (url.includes('/api/alerts/')) return envelope(alerts);
+    return envelope(null);
+  });
+};
+
 describe('TelemetryContext', () => {
   beforeEach(() => {
     localStorage.clear();
-    MockWebSocket.instances = [];
+  });
+
+  afterEach(() => {
+    vi.unstubAllEnvs();
+    vi.unstubAllGlobals();
+    vi.useRealTimers();
   });
 
   it('renders children with default context values', () => {
+    vi.stubGlobal('fetch', buildFetch());
+
     render(
       <TelemetryProvider>
         <TestComponent />
-      </TelemetryProvider>
+      </TelemetryProvider>,
     );
 
     expect(screen.getByTestId('active-tab')).toHaveTextContent('overview');
@@ -67,10 +98,12 @@ describe('TelemetryContext', () => {
   });
 
   it('allows changing active tab, theme, line status, and emergency override', () => {
+    vi.stubGlobal('fetch', buildFetch());
+
     render(
       <TelemetryProvider>
         <TestComponent />
-      </TelemetryProvider>
+      </TelemetryProvider>,
     );
 
     act(() => {
@@ -95,79 +128,86 @@ describe('TelemetryContext', () => {
     expect(screen.getByTestId('emergency-override')).toHaveTextContent('ACTIVE');
   });
 
-  it('establishes WebSocket connection and handles snapshot telemetry updates', async () => {
+  it('polls the telemetry endpoint and applies snapshot updates', async () => {
+    vi.stubGlobal('fetch', buildFetch({
+      telemetry: {
+        cityHealthIndex: 99.5,
+        totalPowerMW: 900.0,
+      },
+    }));
+    const fetchMock = vi.mocked(fetch);
+
     render(
       <TelemetryProvider>
         <TestComponent />
-      </TelemetryProvider>
+      </TelemetryProvider>,
     );
 
-    // Get created WebSocket instance
-    expect(MockWebSocket.instances.length).toBeGreaterThan(0);
-    const ws = MockWebSocket.instances[0];
-
-    // Simulate server snapshot update message
-    act(() => {
-      ws.triggerMessage({
-        event: 'snapshot',
-        data: {
-          cityHealthIndex: 99.5,
-          totalPowerMW: 900.0,
-        },
-      });
+    await waitFor(() => {
+      expect(fetchMock).toHaveBeenCalledWith('/api/telemetry/latest/');
     });
-
-    expect(screen.getByTestId('city-health')).toHaveTextContent('99.5');
+    await waitFor(() => {
+      expect(screen.getByTestId('city-health')).toHaveTextContent('99.5');
+      expect(screen.getByTestId('connection-status')).toHaveTextContent('connected');
+    });
   });
 
-  it('allows acknowledging active alerts', () => {
+  it('fetches nodes and alerts on mount and exposes them via context', async () => {
+    vi.stubGlobal('fetch', buildFetch({
+      nodes: [
+        { id: 'node-01', name: 'Central Park AQI', location_lat: 40.78, location_lon: -73.96, status: 'online', node_type: 'air_quality', metadata_json: null, created_at: '2026-01-01T00:00:00Z' },
+      ],
+      alerts: [
+        { id: 10, rule_id: 1, node_id: 'node-01', metric_name: 'aqi', value: 165, threshold: 150, severity: 'critical', message: 'AQI exceeded threshold', triggered_at: '2026-01-01T00:00:00Z', resolved_at: null },
+      ],
+    }));
+
     render(
       <TelemetryProvider>
         <TestComponent />
-      </TelemetryProvider>
+      </TelemetryProvider>,
     );
 
-    const ws = MockWebSocket.instances[0];
-    act(() => {
-      ws.triggerMessage({
-        event: 'snapshot',
-        data: {
-          activeAlerts: [
-            {
-              id: 'ALT-1092',
-              timestamp: '10:24:12',
-              level: 'CRITICAL',
-              sector: 'SECTOR-04 (GRID)',
-              message: 'Substation #09 load variance exceeding nominal parameters (+14%)',
-              status: 'ACTIVE'
-            }
-          ]
-        },
-      });
+    await waitFor(() => {
+      expect(screen.getByTestId('nodes-count')).toHaveTextContent('1');
+      expect(screen.getByTestId('alerts-count')).toHaveTextContent('1');
+    });
+  });
+
+  it('allows acknowledging active alerts while preserving them between refreshes', async () => {
+    const alertPayload = [
+      { id: 10, rule_id: 1, node_id: 'node-01', metric_name: 'aqi', value: 165, threshold: 150, severity: 'critical', message: 'AQI exceeded threshold', triggered_at: '2026-01-01T00:00:00Z', resolved_at: null },
+    ];
+    vi.stubGlobal('fetch', buildFetch({ alerts: alertPayload }));
+
+    render(
+      <TelemetryProvider>
+        <TestComponent />
+      </TelemetryProvider>,
+    );
+
+    await waitFor(() => {
+      expect(screen.getByTestId('alerts-count')).toHaveTextContent('1');
     });
 
+    screen.getByText('Acknowledge Alert').click();
+
+    // Alert is marked RESOLVED but still present in the list.
     expect(screen.getByTestId('alerts-count')).toHaveTextContent('1');
-
-    act(() => {
-      screen.getByText('Acknowledge Alert').click();
-    });
-
-    // Alert status is updated to RESOLVED
   });
 
-  it('sets connectionStatus to error when WebSocket encounters an error', () => {
+  it('sets connectionStatus to error when the telemetry request fails', async () => {
+    vi.stubGlobal('fetch', vi.fn().mockRejectedValue(new Error('Network error')));
+
     render(
       <TelemetryProvider>
         <TestComponent />
-      </TelemetryProvider>
+      </TelemetryProvider>,
     );
 
-    const ws = MockWebSocket.instances[0];
-    act(() => {
-      ws.triggerError(new Error('Connection refused'));
+    await waitFor(() => {
+      expect(screen.getByTestId('connection-status')).toHaveTextContent('error');
     });
-
-    expect(screen.getByTestId('connection-status')).toHaveTextContent('error');
-    expect(screen.getByTestId('connection-error')).toHaveTextContent('Unable to establish connection');
+    expect(screen.getByTestId('connection-error').textContent).not.toBe('');
   });
 });

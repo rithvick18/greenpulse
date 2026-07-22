@@ -12,7 +12,7 @@ import {
 } from 'lucide-react';
 
 export const InfrastructureView: React.FC = () => {
-  const { structuralNodes, airQualityAQI, maintenanceQueue, totalSensors, meshHealthPct } = useTelemetry();
+  const { structuralNodes, airQualityAQI, maintenanceQueue, totalSensors, meshHealthPct, nodes } = useTelemetry();
 
   return (
     <div className="p-6 space-y-6 font-mono grid-bg">
@@ -115,6 +115,56 @@ export const InfrastructureView: React.FC = () => {
               ))
             )}
           </div>
+        </div>
+      </div>
+
+      {/* Registered Sensor Nodes (from /api/nodes/) */}
+      <div className="p-5 bg-surface border border-outline-variant space-y-4">
+        <div className="flex items-center justify-between border-b border-outline-variant/60 pb-3">
+          <h2 className="text-sm font-bold text-on-surface tracking-wider uppercase font-mono">
+            REGISTERED SENSOR NODES
+          </h2>
+          <span className="text-xs text-outline">{nodes.length} NODES ONLINE</span>
+        </div>
+
+        <div className="overflow-x-auto">
+          {nodes.length === 0 ? (
+            <div className="text-center py-6 text-xs text-outline font-mono">
+              No registered sensor nodes reporting.
+            </div>
+          ) : (
+            <table className="w-full text-left font-mono text-xs border-collapse">
+              <thead>
+                <tr className="border-b border-outline-variant bg-surface-container-low text-outline text-[10px] uppercase tracking-wider">
+                  <th className="p-3">NODE ID</th>
+                  <th className="p-3">NAME</th>
+                  <th className="p-3">TYPE</th>
+                  <th className="p-3">LOCATION</th>
+                  <th className="p-3">STATUS</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-outline-variant/40">
+                {nodes.map((node) => {
+                  const online = node.status?.toLowerCase() === 'online';
+                  return (
+                    <tr key={node.id} className="hover:bg-surface-container-high transition-colors">
+                      <td className="p-3 font-bold text-primary">{node.id}</td>
+                      <td className="p-3 text-on-surface font-semibold">{node.name}</td>
+                      <td className="p-3 text-outline">{node.node_type}</td>
+                      <td className="p-3 text-outline">
+                        {node.location_lat.toFixed(4)}, {node.location_lon.toFixed(4)}
+                      </td>
+                      <td className="p-3">
+                        <span className={`text-[10px] font-bold uppercase ${online ? 'text-emerald-400 status-led' : 'text-amber-400'}`}>
+                          {node.status}
+                        </span>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          )}
         </div>
       </div>
     </div>

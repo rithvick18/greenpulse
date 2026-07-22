@@ -1,18 +1,21 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import { 
-  DashboardTab, 
-  ThemeMode, 
-  AlertItem, 
-  EnergySource, 
-  IntersectionData, 
-  PublicSafetyUnit, 
-  StructuralNode, 
+import {
+  DashboardTab,
+  ThemeMode,
+  AlertItem,
+  EnergySource,
+  IntersectionData,
+  PublicSafetyUnit,
+  StructuralNode,
   Substation,
   RoboticCell,
   MaintenanceItem,
   IncidentItem,
   TrafficCamera
 } from '../types/dashboard';
+import { ApiNode } from '../types/api';
+import { getLatestTelemetry, getNodes, getAlerts, ApiError } from '../api/client';
+import { mapAlertToAlertItem } from '../types/api';
 
 interface TelemetryContextType {
   activeTab: DashboardTab;
@@ -32,6 +35,7 @@ interface TelemetryContextType {
   avCorridorFlow: number;
   activeAlerts: AlertItem[];
   acknowledgeAlert: (id: string) => void;
+  nodes: ApiNode[];
   energySources: EnergySource[];
   substations: Substation[];
   intersections: IntersectionData[];
@@ -58,7 +62,9 @@ interface TelemetryContextType {
 
 const TelemetryContext = createContext<TelemetryContextType | undefined>(undefined);
 
-const WS_URL = import.meta.env.VITE_WS_URL || 'ws://localhost:8080/telemetry';
+// Telemetry is polled from the Django REST backend over HTTP. The API client
+// in src/api/client.ts resolves all endpoints through relative "/api/..." paths
+// (proxied to Django by vite.config.ts in dev, or a reverse proxy in prod).
 
 export const TelemetryProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [activeTab, setActiveTab] = useState<DashboardTab>('overview');
@@ -84,6 +90,9 @@ export const TelemetryProvider: React.FC<{ children: React.ReactNode }> = ({ chi
   // Alerts & Overrides
   const [activeAlerts, setActiveAlerts] = useState<AlertItem[]>([]);
   const [emergencyOverrideActive, setEmergencyOverrideActive] = useState(false);
+
+  // Registered sensor nodes (sourced from /api/nodes/, lower frequency than telemetry)
+  const [nodes, setNodes] = useState<ApiNode[]>([]);
 
   // Energy & Infrastructure
   const [energySources, setEnergySources] = useState<EnergySource[]>([]);
@@ -147,81 +156,110 @@ export const TelemetryProvider: React.FC<{ children: React.ReactNode }> = ({ chi
     setActiveAlerts(prev => prev.map(a => a.id === id ? { ...a, status: 'RESOLVED' } : a));
   };
 
-  // Real-time WebSocket connection to backend telemetry stream
+  const updateTelemetryData = (payload: any) => {
+    if (!payload) return;
+    if (payload.cityHealthIndex !== undefined) setCityHealthIndex(payload.cityHealthIndex);
+    if (payload.totalPowerMW !== undefined) setTotalPowerMW(payload.totalPowerMW);
+    if (payload.peakLoadMW !== undefined) setPeakLoadMW(payload.peakLoadMW);
+    if (payload.cleanEnergyPercent !== undefined) setCleanEnergyPercent(payload.cleanEnergyPercent);
+    if (payload.trafficCongestionPercent !== undefined) setTrafficCongestionPercent(payload.trafficCongestionPercent);
+    if (payload.airQualityAQI !== undefined) setAirQualityAQI(payload.airQualityAQI);
+    if (payload.batteryReserveMWh !== undefined) setBatteryReserveMWh(payload.batteryReserveMWh);
+    if (payload.gridFrequencyHz !== undefined) setGridFrequencyHz(payload.gridFrequencyHz);
+    if (payload.waterPressurePsi !== undefined) setWaterPressurePsi(payload.waterPressurePsi);
+    if (payload.seismicMv !== undefined) setSeismicMv(payload.seismicMv);
+    if (payload.avCorridorFlow !== undefined) setAvCorridorFlow(payload.avCorridorFlow);
+    if (payload.activeAlerts !== undefined) setActiveAlerts(payload.activeAlerts);
+    if (payload.energySources !== undefined) setEnergySources(payload.energySources);
+    if (payload.substations !== undefined) setSubstations(payload.substations);
+    if (payload.intersections !== undefined) setIntersections(payload.intersections);
+    if (payload.safetyUnits !== undefined) setSafetyUnits(payload.safetyUnits);
+    if (payload.structuralNodes !== undefined) setStructuralNodes(payload.structuralNodes);
+    if (payload.roboticCells !== undefined) setRoboticCells(payload.roboticCells);
+    if (payload.lineStatus !== undefined) setLineStatus(payload.lineStatus);
+    if (payload.maintenanceQueue !== undefined) setMaintenanceQueue(payload.maintenanceQueue);
+    if (payload.totalSensors !== undefined) setTotalSensors(payload.totalSensors);
+    if (payload.meshHealthPct !== undefined) setMeshHealthPct(payload.meshHealthPct);
+    if (payload.activeIncidents !== undefined) setActiveIncidents(payload.activeIncidents);
+    if (payload.avgResponseEtaMinutes !== undefined) setAvgResponseEtaMinutes(payload.avgResponseEtaMinutes);
+    if (payload.trafficCameras !== undefined) setTrafficCameras(payload.trafficCameras);
+    if (payload.avVectorsActive !== undefined) setAvVectorsActive(payload.avVectorsActive);
+    if (payload.emergencyOverrideActive !== undefined) setEmergencyOverrideActive(payload.emergencyOverrideActive);
+  };
+
+  // Poll the Django telemetry endpoint every 3 seconds. Connection status is
+  // driven by the success/failure of these requests so the BackendErrorOverlay
+  // reflects real backend reachability.
   useEffect(() => {
-    let ws: WebSocket | null = null;
+    let isDisposed = false;
+    let pollInterval: ReturnType<typeof setInterval> | null = null;
 
-    const connect = () => {
+    const poll = async () => {
       try {
-        ws = new WebSocket(WS_URL);
-
-        ws.onopen = () => {
-          setConnectionStatus('connected');
-          setConnectionError(null);
-        };
-
-        ws.onmessage = (event) => {
-          setConnectionStatus('connected');
-          setConnectionError(null);
-          try {
-            const data = JSON.parse(event.data);
-            const payload = data.data || data;
-
-            if (payload.cityHealthIndex !== undefined) setCityHealthIndex(payload.cityHealthIndex);
-            if (payload.totalPowerMW !== undefined) setTotalPowerMW(payload.totalPowerMW);
-            if (payload.peakLoadMW !== undefined) setPeakLoadMW(payload.peakLoadMW);
-            if (payload.cleanEnergyPercent !== undefined) setCleanEnergyPercent(payload.cleanEnergyPercent);
-            if (payload.trafficCongestionPercent !== undefined) setTrafficCongestionPercent(payload.trafficCongestionPercent);
-            if (payload.airQualityAQI !== undefined) setAirQualityAQI(payload.airQualityAQI);
-            if (payload.batteryReserveMWh !== undefined) setBatteryReserveMWh(payload.batteryReserveMWh);
-            if (payload.gridFrequencyHz !== undefined) setGridFrequencyHz(payload.gridFrequencyHz);
-            if (payload.waterPressurePsi !== undefined) setWaterPressurePsi(payload.waterPressurePsi);
-            if (payload.seismicMv !== undefined) setSeismicMv(payload.seismicMv);
-            if (payload.avCorridorFlow !== undefined) setAvCorridorFlow(payload.avCorridorFlow);
-            if (payload.activeAlerts !== undefined) setActiveAlerts(payload.activeAlerts);
-            if (payload.energySources !== undefined) setEnergySources(payload.energySources);
-            if (payload.substations !== undefined) setSubstations(payload.substations);
-            if (payload.intersections !== undefined) setIntersections(payload.intersections);
-            if (payload.safetyUnits !== undefined) setSafetyUnits(payload.safetyUnits);
-            if (payload.structuralNodes !== undefined) setStructuralNodes(payload.structuralNodes);
-            if (payload.roboticCells !== undefined) setRoboticCells(payload.roboticCells);
-            if (payload.lineStatus !== undefined) setLineStatus(payload.lineStatus);
-            if (payload.maintenanceQueue !== undefined) setMaintenanceQueue(payload.maintenanceQueue);
-            if (payload.totalSensors !== undefined) setTotalSensors(payload.totalSensors);
-            if (payload.meshHealthPct !== undefined) setMeshHealthPct(payload.meshHealthPct);
-            if (payload.activeIncidents !== undefined) setActiveIncidents(payload.activeIncidents);
-            if (payload.avgResponseEtaMinutes !== undefined) setAvgResponseEtaMinutes(payload.avgResponseEtaMinutes);
-            if (payload.trafficCameras !== undefined) setTrafficCameras(payload.trafficCameras);
-            if (payload.avVectorsActive !== undefined) setAvVectorsActive(payload.avVectorsActive);
-            if (payload.emergencyOverrideActive !== undefined) setEmergencyOverrideActive(payload.emergencyOverrideActive);
-          } catch (err) {
-            console.error('Failed to parse telemetry message from WebSocket:', err);
-          }
-        };
-
-        ws.onerror = (error) => {
-          console.error('Telemetry WebSocket error:', error);
-          setConnectionStatus('error');
-          setConnectionError(`Unable to establish connection with telemetry backend at ${WS_URL}`);
-        };
-
-        ws.onclose = () => {
-          setConnectionStatus('error');
-          setConnectionError(`Backend WebSocket connection closed (${WS_URL}).`);
-        };
-      } catch (err: any) {
+        const data = await getLatestTelemetry();
+        if (isDisposed) return;
+        updateTelemetryData(data);
+        setConnectionStatus('connected');
+        setConnectionError(null);
+      } catch (err) {
+        if (isDisposed) return;
         setConnectionStatus('error');
-        setConnectionError(`Failed to initialize WebSocket connection: ${err?.message || err}`);
+        const detail = err instanceof ApiError
+          ? `Telemetry API returned HTTP ${err.status}.`
+          : 'Unable to establish telemetry connection with the backend.';
+        setConnectionError(detail);
       }
     };
 
-    connect();
+    poll();
+    pollInterval = setInterval(poll, 3000);
 
     return () => {
-      if (ws) {
-        ws.onclose = null;
-        ws.onerror = null;
-        ws.close();
+      isDisposed = true;
+      if (pollInterval) {
+        clearInterval(pollInterval);
+      }
+    };
+  }, [reconnectTrigger]);
+
+  // Nodes and alerts change less often than telemetry; refresh on mount and
+  // every 10 seconds. Alerts are merged into the existing activeAlerts list so
+  // operator acknowledgements are preserved between refreshes.
+  useEffect(() => {
+    let isDisposed = false;
+    let refreshInterval: ReturnType<typeof setInterval> | null = null;
+
+    const refresh = async () => {
+      try {
+        const [fetchedNodes, fetchedAlerts] = await Promise.all([
+          getNodes(),
+          getAlerts(),
+        ]);
+        if (isDisposed) return;
+        setNodes(fetchedNodes);
+        setActiveAlerts(prev => {
+          const acknowledged = new Set(
+            prev.filter(a => a.status !== 'ACTIVE').map(a => a.id),
+          );
+          const fresh = fetchedAlerts.map(mapAlertToAlertItem);
+          // Keep acknowledged alerts, then any freshly active ones not already present.
+          const freshIds = new Set(fresh.map(a => a.id));
+          const retained = prev.filter(a => !freshIds.has(a.id) && acknowledged.has(a.id));
+          return [...retained, ...fresh];
+        });
+      } catch {
+        // Node/alert refresh failures are non-fatal; telemetry polling drives
+        // the primary connection status. Logging only to avoid console spam.
+      }
+    };
+
+    refresh();
+    refreshInterval = setInterval(refresh, 10000);
+
+    return () => {
+      isDisposed = true;
+      if (refreshInterval) {
+        clearInterval(refreshInterval);
       }
     };
   }, [reconnectTrigger]);
@@ -246,6 +284,7 @@ export const TelemetryProvider: React.FC<{ children: React.ReactNode }> = ({ chi
         avCorridorFlow,
         activeAlerts,
         acknowledgeAlert,
+        nodes,
         energySources,
         substations,
         intersections,

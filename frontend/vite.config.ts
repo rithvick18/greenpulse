@@ -8,6 +8,15 @@ export default defineConfig({
   server: {
     port: 3000,
     open: false,
+    // In development, forward all `/api` requests to the Django backend so the
+    // frontend can use same-origin relative URLs (no CORS, no hardcoded host).
+    // For production, serve both behind a reverse proxy (e.g. nginx) instead.
+    proxy: {
+      '/api': {
+        target: 'http://localhost:8000',
+        changeOrigin: true,
+      },
+    },
   },
   test: {
     globals: true,
